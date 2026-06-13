@@ -1,4 +1,4 @@
-name: Build APK Gradle (Fixed Path)
+name: Build APK Gradle (Ultimate Node Fix)
 on:
   push:
     branches: [ main, master ]
@@ -30,10 +30,10 @@ jobs:
       - name: Generate Android Folder (Prebuild)
         run: npx expo prebuild --platform android
 
-      - name: Fix Node Path for Reanimated
+      - name: Force Global Node Link
         run: |
-          mkdir -p android
-          echo "NODE_BINARY=$(which node)" >> android/gradle.properties
+          sudo ln -sf $(which node) /usr/local/bin/node
+          sudo ln -sf $(which node) /usr/bin/node
 
       - name: Decode Keystore File
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
