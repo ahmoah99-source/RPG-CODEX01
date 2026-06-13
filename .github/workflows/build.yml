@@ -1,28 +1,23 @@
-name: Build APK
+name: Generate and Push Keystore
 on:
   push:
     branches: [ main, master ]
 
 jobs:
-  build:
+  generate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: Install EAS CLI Directly
-        run: npm install -g eas-cli
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build Android APK
+      - name: Create Keystore File
         run: |
-          eas build --platform android --profile preview --non-interactive --no-wait
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          keytool -genkeypair -v -keystore my-release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000 -storepass 123456 -keypass 123456 -dname "CN=Developer, OU=Mobile, O=Expo, L=Cairo, S=Cairo, C=EG"
+
+      - name: Commit and Push Keystore back to Repository
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@://github.com"
+          git add my-release-key.keystore
+          git commit -m "Add official keystore file [skip ci]" || true
+          git push origin HEAD:${{ github.ref }}
