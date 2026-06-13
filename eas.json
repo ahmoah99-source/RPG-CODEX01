@@ -5,7 +5,15 @@
   "build": {
     "preview": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "credentialsSource": "local",
+        "keystore": {
+          "keystorePath": "my-release-key.keystore",
+          "image": "latest",
+          "keystorePassword": "$EAS_ANDROID_KEYSTORE_PASSWORD",
+          "keyAlias": "$EAS_ANDROID_KEY_ALIAS",
+          "keyPassword": "$EAS_ANDROID_KEY_PASSWORD"
+        }
       }
     }
   }
