@@ -1,4 +1,4 @@
-name: Trigger Expo Build
+name: Build APK
 on:
   push:
     branches: [ main, master ]
@@ -21,8 +21,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Configure and Push to Expo
+      - name: Build Android APK
         run: |
-          eas update:configure --non-interactive || true
+          eas build --platform android --profile preview --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
