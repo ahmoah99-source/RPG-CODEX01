@@ -48,9 +48,9 @@ export default function RootLayout() {
   return (
     <>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
+        {/* المجلد الجديد بدون أقواس */}
+        <Stack.Screen name="tabs" />
         <Stack.Screen name="character/[id]" />
-        <Stack.Screen name="compare" />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="light" />
@@ -59,16 +59,6 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0f172a',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    fontFamily: 'Tajawal_500Medium',
-    color: '#94a3b8',
-  },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a' },
+  loadingText: { marginTop: 16, fontSize: 16, fontFamily: 'Tajawal_500Medium', color: '#94a3b8' },
 });
