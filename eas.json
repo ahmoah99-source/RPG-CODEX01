@@ -3,18 +3,17 @@
     "version": ">= 10.0.0"
   },
   "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
     "preview": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "credentials": {
+          "keystore": {
+            "keystorePassword": "123456",
+            "keyAlias": "my-key-alias",
+            "keyPassword": "123456"
+          }
+        }
       }
-    },
-    "production": {}
-  },
-  "submit": {
-    "production": {}
+    }
   }
 }
