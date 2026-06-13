@@ -23,7 +23,7 @@ jobs:
 
       - name: Build Android APK
         run: |
-          eas project:init --non-interactive
+          eas project:init --non-interactive --force
           eas build --platform android --profile preview --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
