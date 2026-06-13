@@ -37,9 +37,6 @@ jobs:
             }
           }' > credentials.json
 
-      - name: Run Expo Prebuild to Check Errors
-        run: npx expo prebuild --platform android
-
       - name: Build Android APK
         run: |
           eas build --platform android --profile preview --non-interactive --no-wait
