@@ -22,6 +22,8 @@ jobs:
         run: npm install
 
       - name: Build Android APK
-        run: eas build --platform android --profile preview --non-interactive
+        run: |
+          eas project:init --non-interactive
+          eas build --platform android --profile preview --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
