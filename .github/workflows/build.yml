@@ -21,10 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Generate Keystore Automatically
-        run: |
-          keytool -genkeypair -v -keystore my-release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000 -storepass 123456 -keypass 123456 -dname "CN=Expo Developer, OU=Mobile, O=Expo, L=Cairo, S=Cairo, C=EG"
-
       - name: Build Android APK
         run: |
           eas build --platform android --profile preview --non-interactive
