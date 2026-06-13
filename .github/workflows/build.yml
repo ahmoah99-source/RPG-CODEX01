@@ -1,4 +1,4 @@
-name: Generate and Push Keystore
+name: Generate Keystore Text
 on:
   push:
     branches: [ main, master ]
@@ -7,17 +7,9 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Create Keystore File
         run: |
           keytool -genkeypair -v -keystore my-release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000 -storepass 123456 -keypass 123456 -dname "CN=Developer, OU=Mobile, O=Expo, L=Cairo, S=Cairo, C=EG"
-
-      - name: Commit and Push Keystore back to Repository
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@://github.com"
-          git add my-release-key.keystore
-          git commit -m "Add official keystore file [skip ci]" || true
-          git push origin HEAD:${{ github.ref }}
+          echo "=== COPY THE TEXT BELOW ==="
+          base64 my-release-key.keystore
+          echo "=== END OF TEXT ==="
