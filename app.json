@@ -11,6 +11,9 @@
     "ios": {
       "supportsTablet": true
     },
+    "android": {
+      "package": "com.ahmoah99.boltexponativewind"
+    },
     "web": {
       "bundler": "metro",
       "output": "single",
