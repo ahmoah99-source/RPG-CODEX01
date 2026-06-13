@@ -5,14 +5,7 @@
   "build": {
     "preview": {
       "android": {
-        "buildType": "apk",
-        "credentials": {
-          "keystore": {
-            "keystorePassword": "123456",
-            "keyAlias": "my-key-alias",
-            "keyPassword": "123456"
-          }
-        }
+        "buildType": "apk"
       }
     }
   }
