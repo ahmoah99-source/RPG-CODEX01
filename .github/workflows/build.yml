@@ -30,7 +30,7 @@ jobs:
             "android": {
               "keystore": {
                 "keystorePath": "my-release-key.keystore",
-                "storePassword": "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}",
+                "keystorePassword": "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}",
                 "keyAlias": "${{ secrets.ANDROID_KEY_ALIAS }}",
                 "keyPassword": "${{ secrets.ANDROID_KEY_PASSWORD }}"
               }
