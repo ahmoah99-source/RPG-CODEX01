@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "bolt-expo-nativewind",
-    "slug": "bolt-expo-nativewind",
+    "slug": "bolt-expo-nativewind-zbx2d83h-k6fgueh3g0l",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -25,7 +25,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "0b0f7ae4-a15b-4b1d-95ae-25dc0dc4544b"
+        "projectId": "f19fbe0f-4066-4403-9e0c-d1fdd1353403"
       }
     }
   }
