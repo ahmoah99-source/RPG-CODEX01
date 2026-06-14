@@ -1,4 +1,4 @@
-name: Build APK Expo Final Absolute
+name: Build APK Clean Expo
 on:
   push:
     branches: [ main, master ]
@@ -33,17 +33,15 @@ jobs:
       - name: Decode Keystore File
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
 
-      - name: Inject Credentials to Gradle Properties
+      - name: Inject Credentials to Gradle
         run: |
           echo "RELEASE_STORE_FILE=my-release-key.keystore" >> android/gradle.properties
           echo "RELEASE_STORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/gradle.properties
           echo "RELEASE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/gradle.properties
           echo "RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/gradle.properties
-          echo "NODE_BINARY=$(which node)" >> android/gradle.properties
 
-      - name: Build Android APK (Absolute Environment Fix)
+      - name: Build Android APK
         run: |
-          export NODE_BINARY=$(which node)
           cd android
           chmod +x gradlew
           ./gradlew clean
