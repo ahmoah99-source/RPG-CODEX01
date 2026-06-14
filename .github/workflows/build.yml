@@ -27,8 +27,8 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Expo Prebuild (Force Load Config)
-        run: npx expo prebuild --platform android --no-validator
+      - name: Expo Prebuild (Generate Android)
+        run: npx expo prebuild --platform android
         env:
           NODE_BINARY: /usr/local/bin/node
 
