@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { Sword, Plus, Trash2 } from 'lucide-react-native';
-import { loadWeapons, saveWeapons, Weapon } from '../../services/weapons';
+import { loadWeapons, saveWeapons, Weapon } from '../../services/Weapons';
 
 export default function WeaponsScreen() {
   const [weapons, setWeapons] = useState<Weapon[]>([]);
@@ -25,11 +25,11 @@ export default function WeaponsScreen() {
       return;
     }
     const newWeapon: Weapon = {
-      id: Date.now().toString(), // تم تعديلها لـ id
-      name,                      // تم تعديلها لـ name
+      id: Date.now().toString(),
+      name,                      
       baseDamage: parseFloat(baseDamage) || 0,
       rarity,
-      cost: parseFloat(cost) || 0, // تم تعديلها لـ cost
+      cost: parseFloat(cost) || 0,
     };
     const updated = [...weapons, newWeapon];
     setWeapons(updated);
@@ -41,7 +41,7 @@ export default function WeaponsScreen() {
   };
 
   const handleDeleteWeapon = async (id: string) => {
-    const updated = weapons.filter(w => w.id !== id); // تم تعديلها لـ id
+    const updated = weapons.filter(w => w.id !== id);
     setWeapons(updated);
     await saveWeapons(updated);
   };
@@ -115,4 +115,3 @@ const styles = StyleSheet.create({
   epic: { color: '#a855f7' },
   legendary: { color: '#f59e0b' }
 });
-
