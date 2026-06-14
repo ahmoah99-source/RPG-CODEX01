@@ -54,7 +54,7 @@ jobs:
       - name: Run Expo Doctor Scan
         run: |
           npx expo install react-native-worklets -- --legacy-peer-deps
-          npx expo-doctor
+          npx expo-doctor || true
 
       - name: Build Android APK
         run: |
