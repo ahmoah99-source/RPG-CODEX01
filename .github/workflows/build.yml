@@ -29,11 +29,8 @@ jobs:
 
       - name: 🔍 RUN PROJECT DIAGNOSTIC (Scan Project)
         run: |
-          echo "=== 1. Checking Expo Configuration ==="
+          echo "=== Checking Expo Configuration ==="
           npx expo doctor || true
-          
-          echo "=== 2. Checking Code & TypeScript Errors ==="
-          npx tsc --noEmit || true
 
       - name: Overwrite Reanimated Bug File
         run: |
@@ -49,7 +46,7 @@ jobs:
         run: |
           echo "NODE_BINARY=/usr/local/bin/node" >> android/gradle.properties
           echo "RELEASE_STORE_FILE=my-release-key.keystore" >> android/gradle.properties
-          echo "RELEASE_STORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/properties
+          echo "RELEASE_STORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/gradle.properties
           echo "RELEASE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/gradle.properties
           echo "RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/gradle.properties
 
