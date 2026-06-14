@@ -51,14 +51,13 @@ jobs:
       - name: Decode Keystore File
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
 
+      - name: Run Expo Doctor Scan
+        run: npx expo-doctor
+
       - name: Build Android APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew clean
           export NODE_OPTIONS="--max-old-space-size=4096"
-          
-          # تشغيل الفحص الطبي للأكواد والـ CLI هنا بالظبط بعد ما كل الملفات جهزت وقبل البناء النهائي
-          npx expo-doctor
-          
           ./gradlew assembleRelease -x test --no-daemon --no-configuration-cache --no-build-cache
