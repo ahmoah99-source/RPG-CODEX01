@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { Sword, Plus, Trash2 } from 'lucide-react-native';
-import { loadWeapons, saveWeapons, Weapon } from '../../services/Weapons';
+import { loadweapons, saveweapons, weapon } from '../../services/weapons';
 
 export default function WeaponsScreen() {
   const [weapons, setWeapons] = useState<Weapon[]>([]);
