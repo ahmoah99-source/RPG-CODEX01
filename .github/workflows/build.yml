@@ -1,4 +1,4 @@
-name: Build APK Expo Local Final (With Keystore)
+name: Build APK Expo Fixed System
 on:
   push:
     branches: [ main, master ]
@@ -14,6 +14,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'npm'
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
@@ -27,8 +28,15 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Expo Prebuild
+      - name: Expo Prebuild (Generate Android)
         run: npx expo prebuild --platform android
+
+      - name: Sync Project and Node Paths for Reanimated
+        run: |
+          cd android
+          echo "NODE_BINARY=$(which node)" >> gradle.properties
+          echo "org.gradle.daemon=false" >> gradle.properties
+          sed -i 's/newArchEnabled=true/newArchEnabled=false/g' gradle.properties || true
 
       - name: Decode Keystore File
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
@@ -40,13 +48,12 @@ jobs:
           echo "RELEASE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/gradle.properties
           echo "RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/gradle.properties
 
-      - name: Build Android APK via Expo CLI
+      - name: Build Android APK (Gradle Clean & Build)
         run: |
           cd android
           chmod +x gradlew
+          ./gradlew clean
           ./gradlew assembleRelease -x test --no-daemon
-        env:
-          NODE_BINARY: /usr/local/bin/node
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
