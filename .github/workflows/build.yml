@@ -62,4 +62,4 @@ jobs:
           chmod +x gradlew
           ./gradlew clean
           export NODE_OPTIONS="--max-old-space-size=4096"
-          ./gradlew assembleRelease -x test --no-daemon --no-configuration-cache --no-build-cache --stacktrace --info
+          ./gradlew assembleRelease -x test --no-daemon --no-configuration-cache --no-build-cache --quiet || (echo "=== NODE ERROR LOGS ===" && cat build/reports/problems/problems-report.html || true)
