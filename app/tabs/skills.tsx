@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { Zap, Trash2 } from 'lucide-react-native';
-import { loadSkills, saveSkills, Skill } from '../../services/skills';
+import { loadSkills, saveSkills, Skill } from '../../services/Skills';
 
 export default function SkillsScreen() {
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -25,9 +25,9 @@ export default function SkillsScreen() {
       return;
     }
     const newSkill: Skill = {
-      id: Date.now().toString(), // تم تعديلها لـ id
-      name,                     // تم تعديلها لـ name
-      tier,                     // تم تعديلها لـ tier
+      id: Date.now().toString(),
+      name,                     
+      tier,                     
       multiplier: parseFloat(multiplier) || 1.0,
       staticBoost: parseFloat(staticBoost) || 0
     };
@@ -116,4 +116,3 @@ const styles = StyleSheet.create({
   skillDetails: { flexDirection: 'row-reverse', justifyContent: 'space-between' },
   detailText: { color: '#94a3b8', fontSize: 13 }
 });
-
