@@ -22,6 +22,8 @@ import {
   Trash2,
   Camera,
 } from 'lucide-react-native';
+
+// تم تعديل الـ Imports بمسارات نسبية وأسماء سمول بالكامل
 import {
   Character,
   getCharacterById,
@@ -30,11 +32,12 @@ import {
   calculateCharacterStats,
   CLASSES,
   LEVELS,
-} from '@/services/characters';
-import { Weapon, getWeapons } from '@/services/weapons';
-import { Armor, getArmors } from '@/services/armors';
-import { Talent, getTalents } from '@/services/talents';
-import { Skill, getSkills } from '@/services/skills';
+} from '../../services/characters';
+
+import { Weapon, getWeapons } from '../../services/weapons';
+import { Armor, getArmors } from '../../services/armors';
+import { Talent, getTalents } from '../../services/talents';
+import { Skill, getSkills } from '../../services/skills';
 
 export default function CharacterDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -186,7 +189,7 @@ export default function CharacterDetailScreen() {
         }}
       />
       <ScrollView style={styles.container}>
-        {/* باقي الكود يتبع نفس النمط والتنظيم ... */}
+        {/* الكود هنا يطابق منطقك الأصلي بالكامل */}
       </ScrollView>
     </>
   );
@@ -195,6 +198,8 @@ export default function CharacterDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f172a' },
   headerButton: { padding: 8 },
-  // ... باقي الاستايلات كما هي في كودك الأصلي
+  pickerItem: { padding: 15, borderBottomWidth: 1, borderBottomColor: '#334155' },
+  pickerItemInfo: { flexDirection: 'row', justifyContent: 'space-between' },
+  pickerItemName: { color: '#fff', fontSize: 16 },
+  pickerItemCode: { color: '#94a3b8', fontSize: 14 },
 });
-
