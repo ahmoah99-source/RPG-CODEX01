@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { Zap, Trash2 } from 'lucide-react-native';
-import { loadSkills, saveSkills, Skill } from '../../services/Skills';
+import { loadskills, saveskills, skill } from '../../services/skills';
 
 export default function SkillsScreen() {
   const [skills, setSkills] = useState<Skill[]>([]);
