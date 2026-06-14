@@ -30,9 +30,6 @@ jobs:
       - name: Fix Expo Dependencies Mismatch
         run: npx expo install --fix
 
-      - name: Run Expo Doctor (Scan for Errors)
-        run: npx expo doctor
-
       - name: Overwrite Reanimated Bug File
         run: |
           if [ -f reanimated-fixed.gradle ]; then
@@ -60,4 +57,8 @@ jobs:
           chmod +x gradlew
           ./gradlew clean
           export NODE_OPTIONS="--max-old-space-size=4096"
+          
+          # تشغيل الفحص الطبي للأكواد والـ CLI هنا بالظبط بعد ما كل الملفات جهزت وقبل البناء النهائي
+          npx expo-doctor
+          
           ./gradlew assembleRelease -x test --no-daemon --no-configuration-cache --no-build-cache
