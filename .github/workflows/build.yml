@@ -27,8 +27,10 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Expo Prebuild (Generate Android)
-        run: npx expo prebuild --platform android
+      - name: Expo Prebuild (Force Load Config)
+        run: npx expo prebuild --platform android --no-validator
+        env:
+          NODE_BINARY: /usr/local/bin/node
 
       - name: Decode Keystore File
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
@@ -39,6 +41,7 @@ jobs:
           echo "RELEASE_STORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/gradle.properties
           echo "RELEASE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/gradle.properties
           echo "RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/gradle.properties
+          echo "NODE_BINARY=/usr/local/bin/node" >> android/gradle.properties
 
       - name: Build Android APK
         run: |
@@ -46,6 +49,8 @@ jobs:
           chmod +x gradlew
           ./gradlew clean
           ./gradlew assembleRelease -x test --no-daemon
+        env:
+          NODE_BINARY: /usr/local/bin/node
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
