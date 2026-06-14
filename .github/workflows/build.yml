@@ -62,4 +62,4 @@ jobs:
           chmod +x gradlew
           ./gradlew clean
           export NODE_OPTIONS="--max-old-space-size=4096"
-          ./gradlew assembleRelease -x test --no-daemon --no-configuration-cache --no-build-cache
+          ./gradlew assembleRelease -x test --no-daemon --no-configuration-cache --no-build-cache --stacktrace --info
