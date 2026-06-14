@@ -1,4 +1,4 @@
-name: Build APK Expo Fixed System
+name: Build APK EAS Fixed
 on:
   push:
     branches: [ main, master ]
@@ -24,38 +24,27 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install EAS CLI Globally
+        run: npm install -g eas-cli
+
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Expo Prebuild (Generate Android)
-        run: npx expo prebuild --platform android
-
-      - name: Sync Project and Node Paths for Reanimated
-        run: |
-          cd android
-          echo "NODE_BINARY=$(which node)" >> gradle.properties
-          echo "org.gradle.daemon=false" >> gradle.properties
-          sed -i 's/newArchEnabled=true/newArchEnabled=false/g' gradle.properties || true
-
       - name: Decode Keystore File
-        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > my-release-key.keystore
 
-      - name: Inject Credentials to Gradle
+      - name: Build APK Locally via EAS
         run: |
-          echo "RELEASE_STORE_FILE=my-release-key.keystore" >> android/gradle.properties
-          echo "RELEASE_STORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/gradle.properties
-          echo "RELEASE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/gradle.properties
-          echo "RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/gradle.properties
+          eas build --platform android --profile preview --local --non-interactive \
+          --keystore-path ./my-release-key.keystore \
+          --keystore-alias "${{ secrets.ANDROID_KEY_ALIAS }}" \
+          --keystore-password "${{ secrets.ANDROID_KEY_PASSWORD }}" \
+          --key-password "${{ secrets.ANDROID_KEY_PASSWORD }}"
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Build Android APK (Gradle Clean & Build)
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew clean
-          ./gradlew assembleRelease -x test --no-daemon
-
-      - name: Upload APK Artifact
+      - name: Find and Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: ./*.apk
