@@ -24,8 +24,10 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
+      - name: Install dependencies (Clean Memory)
+        run: |
+          npm cache clean --force
+          npm install --legacy-peer-deps
 
       - name: Expo Prebuild (Generate Android)
         run: npx expo prebuild --platform android
