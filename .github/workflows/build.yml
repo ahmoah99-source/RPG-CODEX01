@@ -13,7 +13,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20 # التحديث السحري هنا عشان يقرأ الأكواد الحديثة
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
@@ -29,9 +29,10 @@ jobs:
 
       - name: Overwrite Reanimated Bug File
         run: |
-          # كسر حماية الملف المكسور في السيرفر واستبداله بالملف السليم بتاعنا
-          chmod +w node_modules/react-native-reanimated/android/build.gradle || true
-          cp reanimated-fixed.gradle node_modules/react-native-reanimated/android/build.gradle
+          if [ -f reanimated-fixed.gradle ]; then
+            chmod +w node_modules/react-native-reanimated/android/build.gradle || true
+            cp reanimated-fixed.gradle node_modules/react-native-reanimated/android/build.gradle
+          fi
 
       - name: Expo Prebuild (Generate Android)
         run: npx expo prebuild --platform android
