@@ -24,15 +24,18 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install dependencies (Clean Memory)
-        run: |
-          npm cache clean --force
-          npm install --legacy-peer-deps
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
 
       - name: Expo Prebuild (Generate Android)
         run: npx expo prebuild --platform android
-        env:
-          NODE_BINARY: /usr/local/bin/node
+
+      - name: Fix Reanimated Bug Directly
+        run: |
+          if [ -f node_modules/react-native-reanimated/android/build.gradle ]; then
+            sed -i 's/def nodeCommand = .*/def nodeCommand = "node"/' node_modules/react-native-reanimated/android/build.gradle
+          fi
+          echo "NODE_BINARY=/usr/local/bin/node" >> android/gradle.properties
 
       - name: Decode Keystore File
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
@@ -43,7 +46,6 @@ jobs:
           echo "RELEASE_STORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/gradle.properties
           echo "RELEASE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/gradle.properties
           echo "RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/gradle.properties
-          echo "NODE_BINARY=/usr/local/bin/node" >> android/gradle.properties
 
       - name: Build Android APK
         run: |
@@ -51,8 +53,6 @@ jobs:
           chmod +x gradlew
           ./gradlew clean
           ./gradlew assembleRelease -x test --no-daemon
-        env:
-          NODE_BINARY: /usr/local/bin/node
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
