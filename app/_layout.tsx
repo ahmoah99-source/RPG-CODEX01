@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '../hooks/useFrameworkReady';
-import { initDatabase } from '../services/database';
+import { loadDatabase } from '../services/Database';
 import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
 import {
   useFonts,
@@ -25,7 +25,7 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    initDatabase()
+    loadDatabase()
       .then(() => setDbReady(true))
       .catch(console.error);
   }, []);
@@ -48,7 +48,6 @@ export default function RootLayout() {
   return (
     <>
       <Stack screenOptions={{ headerShown: false }}>
-        {/* المجلد الجديد بدون أقواس */}
         <Stack.Screen name="tabs" />
         <Stack.Screen name="character/[id]" />
         <Stack.Screen name="+not-found" />
