@@ -53,9 +53,7 @@ jobs:
 
       - name: Run Expo Doctor Scan
         run: |
-          # تثبيت المكتبة الناقصة بالصيغة اللي طلبها السيستم ومسح الكاش المعلق
-          npx expo install react-native-worklets-core -- --legacy-peer-deps
-          rm -rf android
+          npx expo install react-native-worklets -- --legacy-peer-deps
           npx expo-doctor
 
       - name: Build Android APK
