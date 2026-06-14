@@ -27,32 +27,28 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
+      - name: Patch Reanimated Source Code
+        run: |
+          # تعديل ملف ريأنيميتد الأساسي في الـ node_modules قبل توليد مجلد الأندرويد
+          sed -i 's/def nodeCommand = .*/def nodeCommand = "node"/' node_modules/react-native-reanimated/android/build.gradle || true
+
       - name: Expo Prebuild (Generate Android)
         run: npx expo prebuild --platform android
 
-      - name: Force Global Node Path for Android
-        run: |
-          echo "NODE_BINARY=/usr/local/bin/node" >> android/gradle.properties
-          echo "node=/usr/local/bin/node" >> android/local.properties
-          export NODE_BINARY=/usr/local/bin/node
-          export PATH=/usr/local/bin:$PATH
-
-      - name: Decode Keystore File
-        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
-
       - name: Inject Credentials to Gradle
         run: |
+          echo "NODE_BINARY=/usr/local/bin/node" >> android/gradle.properties
           echo "RELEASE_STORE_FILE=my-release-key.keystore" >> android/gradle.properties
           echo "RELEASE_STORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/gradle.properties
           echo "RELEASE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/gradle.properties
           echo "RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/gradle.properties
 
-      - name: Build Android APK (Clean & Run)
+      - name: Decode Keystore File
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
+
+      - name: Build Android APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew clean
           ./gradlew assembleRelease -x test --no-daemon --no-configuration-cache
-        env:
-          NODE_BINARY: /usr/local/bin/node
-          PATH: /usr/local/bin:/usr/bin:/bin
