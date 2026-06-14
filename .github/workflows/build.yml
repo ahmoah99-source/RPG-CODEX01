@@ -1,4 +1,4 @@
-name: Build APK Clean Expo
+name: Build APK Clean Expo Final
 on:
   push:
     branches: [ main, master ]
