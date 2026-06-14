@@ -1,0 +1,56 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+def safeExtGet(prop, fallback) {
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
+def resolveReactNativeDirectory() {
+    def reactNativeElectronProperties = new Properties()
+    def file = new File("$projectDir/../package.json")
+    if (file.exists()) {
+        reactNativeElectronProperties.load(file.newDataInputStream())
+        if (reactNativeElectronProperties.getProperty("name") == "react-native-electron") {
+            return file.getParentFile().getParentFile()
+        }
+    }
+    return new File("$projectDir/../../../node_modules/react-native")
+}
+
+def reactNativeRoot = safeExtGet("reactNativeRoot", resolveReactNativeDirectory())
+
+// هنا أصل المشكلة وتم حلها بتثبيت أمر نود صريح ومباشر للسيرفر
+def nodeCommand = "node"
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:${safeExtGet('buildToolsVersion', '7.4.2')}"
+    }
+}
+
+apply plugin: "com.android.library"
+
+android {
+    compileSdkVersion safeExtGet("compileSdkVersion", 33)
+    buildToolsVersion safeExtGet("buildToolsVersion", "33.0.0")
+
+    defaultConfig {
+        minSdkVersion safeExtGet("minSdkVersion", 21)
+        targetSdkVersion safeExtGet("targetSdkVersion", 33)
+        versionCode 1
+        versionName "1.0"
+    }
+}
+
+repositories {
+    mavenCentral()
+    google()
+}
+
+dependencies {
+    implementation "com.facebook.react:react-native:+"
+}
+
