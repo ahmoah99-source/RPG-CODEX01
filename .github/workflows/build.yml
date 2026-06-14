@@ -27,11 +27,6 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Inspect Project Structure
-        run: |
-          echo "=== Checking services folder ==="
-          ls -R services || ls -R src/services || echo "Folder not found"
-
       - name: Overwrite Reanimated Bug File
         run: |
           if [ -f reanimated-fixed.gradle ]; then
@@ -58,4 +53,5 @@ jobs:
           cd android
           chmod +x gradlew
           ./gradlew clean
+          export NODE_OPTIONS="--max-old-space-size=4096"
           ./gradlew assembleRelease -x test --no-daemon --no-configuration-cache
