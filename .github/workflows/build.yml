@@ -47,12 +47,12 @@ jobs:
           echo "RELEASE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/gradle.properties
           echo "RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/gradle.properties
 
-      - name: Build Android APK
+      - name: Build Android APK (Force No Cache)
         run: |
           cd android
           chmod +x gradlew
           ./gradlew clean
-          ./gradlew assembleRelease -x test --no-daemon
+          ./gradlew assembleRelease -x test --no-daemon --no-configuration-cache
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
