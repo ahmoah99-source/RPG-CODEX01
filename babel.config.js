@@ -3,7 +3,8 @@ module.exports = function (api) {
   return {
     presets: ['babel-preset-expo'],
     plugins: [
-      ['@babel/plugin-transform-typescript', { allowNamespaces: true }]
+      ['@babel/plugin-transform-typescript', { allowNamespaces: true }],
+      'react-native-reanimated/plugin'
     ],
   };
 };
