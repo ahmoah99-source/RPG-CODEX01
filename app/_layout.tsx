@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '../hooks/useFrameworkReady';
-import { loaddatabase } from '../services/Database';
+import { loadDatabase } from '../services/database';
 import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
 import {
   useFonts,
