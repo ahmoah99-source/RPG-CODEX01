@@ -27,10 +27,10 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: 🔍 RUN PROJECT DIAGNOSTIC (Scan Project)
+      - name: 🔍 DEBUG: Inspect Project Structure (فحص وجود الملفات)
         run: |
-          echo "=== Checking Expo Configuration ==="
-          npx expo doctor || true
+          echo "=== 1. Checking if services folder exists ==="
+          ls -R services/ || ls -R src/services/ || echo "المجلد مش موجود في المكان ده!"
 
       - name: Overwrite Reanimated Bug File
         run: |
