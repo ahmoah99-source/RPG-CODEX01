@@ -28,13 +28,7 @@ jobs:
         run: npm install --legacy-peer-deps
 
       - name: Fix Expo Dependencies Mismatch
-        run: |
-          npx expo install react-native-worklets-core --legacy-peer-deps
-          rm -rf android
-          npx expo install --fix
-
-      - name: Run Expo Doctor Scan
-        run: npx expo-doctor
+        run: npx expo install --fix
 
       - name: Overwrite Reanimated Bug File
         run: |
@@ -56,6 +50,13 @@ jobs:
 
       - name: Decode Keystore File
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
+
+      - name: Run Expo Doctor Scan
+        run: |
+          # تثبيت المكتبة الناقصة بالصيغة اللي طلبها السيستم ومسح الكاش المعلق
+          npx expo install react-native-worklets-core -- --legacy-peer-deps
+          rm -rf android
+          npx expo-doctor
 
       - name: Build Android APK
         run: |
