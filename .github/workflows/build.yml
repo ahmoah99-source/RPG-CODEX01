@@ -62,4 +62,10 @@ jobs:
           chmod +x gradlew
           ./gradlew clean
           export NODE_OPTIONS="--max-old-space-size=4096"
-          ./gradlew assembleRelease -x test --no-daemon --no-configuration-cache --no-build-cache --quiet || (echo "=== NODE ERROR LOGS ===" && cat build/reports/problems/problems-report.html || true)
+          ./gradlew assembleRelease -x test --no-daemon --no-configuration-cache --no-build-cache --quiet
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RPG-CODEX01-APK
+          path: android/app/build/outputs/apk/release/app-release.apk
