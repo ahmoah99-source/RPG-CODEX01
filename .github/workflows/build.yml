@@ -30,6 +30,9 @@ jobs:
       - name: Fix Expo Dependencies Mismatch
         run: npx expo install --fix
 
+      - name: Run Expo Doctor (Scan for Errors)
+        run: npx expo doctor
+
       - name: Overwrite Reanimated Bug File
         run: |
           if [ -f reanimated-fixed.gradle ]; then
