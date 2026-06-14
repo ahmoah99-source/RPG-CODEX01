@@ -27,10 +27,10 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: 🔍 DEBUG: Inspect Project Structure (فحص وجود الملفات)
+      - name: Inspect Project Structure
         run: |
-          echo "=== 1. Checking if services folder exists ==="
-          ls -R services/ || ls -R src/services/ || echo "المجلد مش موجود في المكان ده!"
+          echo "=== Checking services folder ==="
+          ls -R services || ls -R src/services || echo "Folder not found"
 
       - name: Overwrite Reanimated Bug File
         run: |
