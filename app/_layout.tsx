@@ -25,18 +25,23 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
+    // تعديل الفتح الآمن: التطبيق سيفتح في كل الحالات
     loadDatabase()
       .then(() => setDbReady(true))
-      .catch(console.error);
+      .catch((e) => {
+        console.error("Database load error:", e);
+        setDbReady(true); 
+      });
   }, []);
 
   useEffect(() => {
+    // إخفاء الـ SplashScreen بمجرد انتهاء المحاولة (سواء نجحت أو فشلت)
     if ((fontsLoaded || fontError) && dbReady) {
-      SplashScreen.hideAsync();
+      SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsLoaded, fontError, dbReady]);
 
-  if (!fontsLoaded || !dbReady) {
+  if (!fontsLoaded && !fontError && !dbReady) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#3b82f6" />
