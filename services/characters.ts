@@ -33,7 +33,6 @@ export const getCharacterById = async (id: number): Promise<Character | null> =>
 };
 
 export const addCharacter = async (character: Character): Promise<number> => {
-  // استخدام .toLowerCase() لضمان المطابقة حتى لو اختلف تنسيق الحروف
   const charClass = CLASSES.find(c => c.name.toLowerCase() === character.class.toLowerCase());
   
   const stats = calculateCharacterStats({
@@ -47,7 +46,7 @@ export const addCharacter = async (character: Character): Promise<number> => {
     defense_power: stats.defense_power,
     level: stats.level,
     level_name: stats.level_name,
-    class_multiplier: stats.level_multiplier, // تأكد من مطابقة الاسم مع ملف database
+    class_multiplier: charClass?.attack_mult || 1.0, // هنا التعديل الجوهري
     talent_ids: character.talent_ids || [],
     skill_ids: character.skill_ids || [],
   };
@@ -75,7 +74,6 @@ export const deleteCharacter = async (id: number): Promise<void> => {
   await remove('characters', id);
 };
 
-// دوال التجهيز (Equip)
 export const equipWeapon = async (characterId: number, weaponId: number | undefined): Promise<void> => {
   await update('characters', characterId, { weapon_id: weaponId });
 };
@@ -84,7 +82,6 @@ export const equipArmor = async (characterId: number, armorId: number | undefine
   await update('characters', characterId, { armor_id: armorId });
 };
 
-// دوال المهارات والمواهب
 export const addTalentToCharacter = async (characterId: number, talentId: number): Promise<void> => {
   const char = await getCharacterById(characterId);
   if (char) {
