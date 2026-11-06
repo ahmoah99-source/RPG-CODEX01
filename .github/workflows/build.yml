@@ -1,4 +1,5 @@
-name: Build APK Clean Expo Final
+name: Build Character Codex APK
+
 on:
   push:
     branches: [ main, master ]
@@ -7,65 +8,39 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: ⠡ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Setup Java JDK
+      - name: ☕ Setup Java JDK
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android SDK
+      - name: 🤖 Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Fix Expo Dependencies Mismatch
-        run: npx expo install --fix
+      - name: 🛠️ Expo Prebuild (Generate Android Native Folders)
+        run: npx expo prebuild --platform android --clean
 
-      - name: Overwrite Reanimated Bug File
-        run: |
-          if [ -f reanimated-fixed.gradle ]; then
-            chmod +w node_modules/react-native-reanimated/android/build.gradle || true
-            cp reanimated-fixed.gradle node_modules/react-native-reanimated/android/build.gradle
-          fi
-
-      - name: Expo Prebuild (Generate Android)
-        run: npx expo prebuild --platform android
-
-      - name: Inject Credentials to Gradle
-        run: |
-          echo "NODE_BINARY=/usr/local/bin/node" >> android/gradle.properties
-          echo "RELEASE_STORE_FILE=my-release-key.keystore" >> android/gradle.properties
-          echo "RELEASE_STORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/gradle.properties
-          echo "RELEASE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/gradle.properties
-          echo "RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/gradle.properties
-
-      - name: Decode Keystore File
-        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
-
-      - name: Run Expo Doctor Scan
-        run: |
-          npx expo install react-native-worklets -- --legacy-peer-deps
-          npx expo-doctor || true
-
-      - name: Build Android APK
+      - name: 🚀 Build Android APK (Local Gradle Build)
         run: |
           cd android
           chmod +x gradlew
           ./gradlew clean
           export NODE_OPTIONS="--max-old-space-size=4096"
-          ./gradlew assembleRelease -x test --no-daemon --no-configuration-cache --no-build-cache --quiet
+          ./gradlew assembleRelease -x test --no-daemon --no-configuration-cache --no-build-cache
 
-      - name: Upload APK Artifact
+      - name: 📦 Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: RPG-CODEX01-APK
+          name: Character-Codex-APK
           path: android/app/build/outputs/apk/release/*.apk
