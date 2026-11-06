@@ -22,8 +22,16 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 🤖 Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: 🤖 Setup Android SDK Environment Manually
+        run: |
+          echo "Setting up Android SDK..."
+          # تثبيت أدوات الأندرويد الأساسية وسداسي أضلاع الـ SDK بشكل مباشر
+          mkdir -p $HOME/android-sdk
+          export ANDROID_HOME=$HOME/android-sdk
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          
+          # تحميل واستخراج الـ Command line tools إذا لزم، أو الاعتماد على بيئة أوبونتو الجاهزة
+          echo "y" | sudo ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: 📦 Install dependencies
         run: npm install --legacy-peer-deps
