@@ -17,9 +17,6 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1e1e2f"
       }
-    },
-    "plugins": [
-      "expo-sqlite"
-    ]
+    }
   }
 }
