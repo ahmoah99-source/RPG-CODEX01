@@ -36,7 +36,7 @@ jobs:
       - name: 📦 Install dependencies & SQLite
         run: |
           npm install --legacy-peer-deps
-          npx expo install expo-sqlite --legacy-peer-deps
+          npx expo install expo-sqlite -- --legacy-peer-deps
 
       - name: 🛠️ Expo Prebuild (Generate Android Native Folders)
         run: npx expo prebuild --platform android --clean
