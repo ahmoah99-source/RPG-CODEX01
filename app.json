@@ -12,7 +12,7 @@
       "backgroundColor": "#1e1e2f"
     },
     "android": {
-      "package": "com.user.charactercodex",
+      "package": "com.character.codex",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1e1e2f"
