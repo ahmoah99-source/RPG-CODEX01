@@ -32,11 +32,10 @@ jobs:
           
           # تحميل واستخراج الـ Command line tools إذا لزم، أو الاعتماد على بيئة أوبونتو الجاهزة
           echo "y" | sudo ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --licenses || true
-
-      - name: 📦 Install dependencies & SQLite
+      - name: 📦 Install dependencies & Fix SQLite
         run: |
           npm install --legacy-peer-deps
-          npx expo install expo-sqlite -- --legacy-peer-deps
+          npm install expo-sqlite@~14.0.4 --legacy-peer-deps
 
       - name: 🛠️ Expo Prebuild (Generate Android Native Folders)
         run: npx expo prebuild --platform android --clean
