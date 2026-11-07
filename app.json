@@ -13,10 +13,7 @@
     },
     "android": {
       "package": "com.character.codex",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1e1e2f"
-      }
+      "icon": "./assets/icon.png"
     }
   }
 }
