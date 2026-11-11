@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Text } from 'react-native';
-import { getTheme, dicts } from './src/theme';
+import { getTheme, dicts } from './src/database/theme';
 import StandaloneCodexEngine from './src/database/dbEngine';
 
 import HomeView from './src/views/HomeView';
