@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
-import { getTheme, dicts } from './src/database/theme';
+import { getTheme, themesMap, dicts } from './src/database/theme';
 import StandaloneCodexEngine from './src/database/dbEngine';
 
 import HomeView from './src/components/HomeView';
@@ -77,12 +77,24 @@ export default function App() {
             case 'settings':
                 return (
                     <View style={styles.settingsBox}>
-                        <TouchableOpacity 
-                            style={[styles.settingsBtn, { backgroundColor: currentTheme.accent }]}
-                            onPress={() => setThemeMode(themeMode === 'darkGlass' ? 'lightSimple' : 'darkGlass')}
-                        >
-                            <Text style={styles.settingsBtnText}>🎨 تبديل الثيم العام</Text>
-                        </TouchableOpacity>
+                        <Text style={[styles.sectionTitle, { color: currentTheme.text }]}>🎨 اختر الثيم والنمط العام:</Text>
+                        {Object.keys(themesMap).map(key => {
+                            const th = themesMap[key];
+                            const isSelected = themeMode === key;
+                            return (
+                                <TouchableOpacity 
+                                    key={key} 
+                                    style={[
+                                        styles.themeCard, 
+                                        { backgroundColor: th.mainBg, borderColor: isSelected ? currentTheme.accent : th.navBorder }
+                                    ]}
+                                    onPress={() => setThemeMode(key)}
+                                >
+                                    <Text style={{ color: th.text, fontWeight: 'bold', fontSize: 12 }}>{th.name}</Text>
+                                    {isSelected && <Text style={{ color: currentTheme.accent, fontSize: 11 }}>✔️ مفعل</Text>}
+                                </TouchableOpacity>
+                            );
+                        })}
                     </View>
                 );
             default:
@@ -128,6 +140,14 @@ export default function App() {
                 )}
             </ScrollView>
 
+            {/* الزرار العائم (Floating Action Button) للاختصارات السريعة */}
+            <TouchableOpacity 
+                style={[styles.floatingBtn, { backgroundColor: currentTheme.accent }]}
+                onPress={() => setCurrentView('heroes')}
+            >
+                <Text style={{ fontSize: 22, color: '#fff' }}>⚔️</Text>
+            </TouchableOpacity>
+
             {/* البار السفلي الدائري */}
             <View style={[styles.bottomNav, { backgroundColor: currentTheme.navBg, borderColor: currentTheme.navBorder }]}>
                 {[
@@ -164,7 +184,8 @@ const styles = StyleSheet.create({
     sidebarBox: { gap: 8 },
     sidebarLink: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(255,255,255,0.08)', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
     sidebarLinkText: { fontSize: 11, fontWeight: 'bold' },
-    settingsBox: { gap: 10, alignItems: 'center', paddingVertical: 20 },
-    settingsBtn: { padding: 12, borderRadius: 12, width: '100%', alignItems: 'center' },
-    settingsBtnText: { color: '#fff', fontSize: 11, fontWeight: 'bold' }
+    settingsBox: { gap: 10, paddingVertical: 10 },
+    sectionTitle: { fontSize: 13, fontWeight: 'bold', marginBottom: 5 },
+    themeCard: { padding: 12, borderRadius: 12, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    floatingBtn: { position: 'absolute', bottom: 75, right: 20, width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', zIndex: 60, elevation: 8 }
 });
