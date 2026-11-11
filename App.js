@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
-import { getTheme, themesMap, dicts } from './src/theme';
+import { getTheme, themesMap, dicts } from './src/database/theme';
 import StandaloneCodexEngine from './src/database/dbEngine';
 
-import HomeView from './src/views/HomeView';
-import HeroesView from './src/views/HeroesView';
-import HeroDetailsView from './src/views/HeroDetailsView';
-import BackpackView from './src/views/BackpackView';
-import ShopView from './src/views/ShopView';
-import SkillsView from './src/views/SkillsView';
-import LevelsView from './src/views/LevelsView';
+import HomeView from './src/components/HomeView';
+import HeroesView from './src/components/HeroesView';
+import HeroDetailsView from './src/components/HeroDetailsView';
+import BackpackView from './src/components/BackpackView';
+import ShopView from './src/components/ShopView';
+import SkillsView from './src/components/SkillsView';
+import LevelsView from './src/components/LevelsView';
 
 export default function App() {
     const [codexEngine, setCodexEngine] = useState(null);
