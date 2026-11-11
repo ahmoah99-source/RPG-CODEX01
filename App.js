@@ -83,6 +83,94 @@ export default function App() {
                             const isSelected = themeMode === key;
                             return (
                                 <TouchableOpacity 
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
+import { getTheme, themesMap, dicts } from './src/database/theme';
+import StandaloneCodexEngine from './src/database/dbEngine';
+
+import HomeView from './src/components/HomeView';
+import HeroesView from './src/components/HeroesView';
+import HeroDetailsView from './src/components/HeroDetailsView';
+import BackpackView from './src/components/BackpackView';
+import ShopView from './src/components/ShopView';
+import SkillsView from './src/components/SkillsView';
+import LevelsView from './src/components/LevelsView';
+import AddEditHeroView from './src/components/AddEditHeroView'; // 🌟 شاشة الإضافة والتعديل الجديدة
+
+export default function App() {
+    const [codexEngine, setCodexEngine] = useState(null);
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [currentView, setCurrentView] = useState('home');
+    const [themeMode, setThemeMode] = useState('darkGlass');
+    const [lang, setLang] = useState('ar');
+    const [selectedHeroId, setSelectedHeroId] = useState(null);
+
+    useEffect(() => {
+        try {
+            const engine = new StandaloneCodexEngine();
+            setCodexEngine(engine);
+        } catch (e) {
+            console.log("Error initializing engine:", e);
+        } finally {
+            setIsLoaded(true);
+        }
+    }, []);
+
+    if (!isLoaded || !codexEngine) {
+        const fallbackTheme = getTheme('darkGlass');
+        return (
+            <View style={[styles.container, { backgroundColor: fallbackTheme.mainBg, justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color={fallbackTheme.accent} />
+                <Text style={{ color: fallbackTheme.text, marginTop: 10, fontSize: 12 }}>جاري تحميل عالم Character Codex...</Text>
+            </View>
+        );
+    }
+
+    const currentTheme = getTheme(themeMode);
+    const currentDict = dicts[lang] || dicts.ar;
+
+    let activeHeroes = [];
+    try {
+        const rawHeroes = codexEngine.getData('heroes');
+        if (Array.isArray(rawHeroes)) {
+            activeHeroes = rawHeroes;
+        }
+    } catch (err) {
+        activeHeroes = [];
+    }
+
+    const activeHeroId = selectedHeroId || (activeHeroes.length > 0 ? activeHeroes[0].id : null);
+    const heroData = activeHeroId ? codexEngine.getHeroData(activeHeroId) : null;
+
+    const renderActiveView = () => {
+        switch (currentView) {
+            case 'home':
+                return <HomeView hero={heroData} theme={currentTheme} dict={currentDict} onNavigate={setCurrentView} />;
+            case 'heroes':
+                return <HeroesView codexEngine={codexEngine} theme={currentTheme} dict={currentDict} onSelectHero={setSelectedHeroId} onNavigate={setCurrentView} />;
+            case 'heroDetails':
+                return <HeroDetailsView codexEngine={codexEngine} heroId={activeHeroId} theme={currentTheme} dict={currentDict} onNavigate={setCurrentView} />;
+            case 'backpack':
+                return <BackpackView codexEngine={codexEngine} heroId={activeHeroId} theme={currentTheme} dict={currentDict} />;
+            case 'shop':
+                return <ShopView codexEngine={codexEngine} heroId={activeHeroId} theme={currentTheme} dict={currentDict} />;
+            case 'skills':
+                return <SkillsView codexEngine={codexEngine} heroId={activeHeroId} theme={currentTheme} dict={currentDict} />;
+            case 'levels':
+                return <LevelsView codexEngine={codexEngine} heroId={activeHeroId} theme={currentTheme} dict={currentDict} />;
+            case 'addHero': // 🌟 إضافة بطل جديد
+                return <AddEditHeroView codexEngine={codexEngine} heroId={null} theme={currentTheme} dict={currentDict} onNavigate={setCurrentView} />;
+            case 'editHero': // 🌟 تعديل البطل الحالي
+                return <AddEditHeroView codexEngine={codexEngine} heroId={activeHeroId} theme={currentTheme} dict={currentDict} onNavigate={setCurrentView} />;
+            case 'settings':
+                return (
+                    <View style={styles.settingsBox}>
+                        <Text style={[styles.sectionTitle, { color: currentTheme.text }]}>🎨 اختر الثيم والنمط العام:</Text>
+                        {Object.keys(themesMap).map(key => {
+                            const th = themesMap[key];
+                            const isSelected = themeMode === key;
+                            return (
+                                <TouchableOpacity 
                                     key={key} 
                                     style={[
                                         styles.themeCard, 
@@ -140,12 +228,12 @@ export default function App() {
                 )}
             </ScrollView>
 
-            {/* الزرار العائم للاختصارات السريعة */}
+            {/* الزرار العائم للاختصارات السريعة (يفتح شاشة إضافة بطل جديد) */}
             <TouchableOpacity 
                 style={[styles.floatingBtn, { backgroundColor: currentTheme.accent }]}
-                onPress={() => setCurrentView('heroes')}
+                onPress={() => setCurrentView('addHero')}
             >
-                <Text style={{ fontSize: 22, color: '#fff' }}>⚔️</Text>
+                <Text style={{ fontSize: 22, color: '#fff' }}>➕</Text>
             </TouchableOpacity>
 
             {/* البار السفلي الدائري */}
