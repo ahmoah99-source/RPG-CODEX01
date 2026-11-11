@@ -1,4 +1,4 @@
-Name: Build Character Codex APK
+name: Build Character Codex APK
 
 on:
   push:
