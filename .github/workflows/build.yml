@@ -1,4 +1,4 @@
-name: Build Character Codex APK
+Name: Build Character Codex APK
 
 on:
   push:
@@ -7,6 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    env:
+      ANDROID_HOME: /home/runner/android-sdk
+      ANDROID_SDK_ROOT: /home/runner/android-sdk
     steps:
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
@@ -25,13 +28,15 @@ jobs:
       - name: 🤖 Setup Android SDK Environment Manually
         run: |
           echo "Setting up Android SDK..."
-          # تثبيت أدوات الأندرويد الأساسية وسداسي أضلاع الـ SDK بشكل مباشر
           mkdir -p $HOME/android-sdk
-          export ANDROID_HOME=$HOME/android-sdk
           echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           
-          # تحميل واستخراج الـ Command line tools إذا لزم، أو الاعتماد على بيئة أوبونتو الجاهزة
-          echo "y" | sudo ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          # تثبيت الحزم الأساسية عبر SDK Manager المدمج في أوبونتو إن وجد
+          if [ -d "/usr/local/lib/android/sdk" ]; then
+            cp -r /usr/local/lib/android/sdk/* $HOME/android-sdk/ || true
+          fi
+
       - name: 📦 Install dependencies & Fix SQLite
         run: |
           npm install --legacy-peer-deps
