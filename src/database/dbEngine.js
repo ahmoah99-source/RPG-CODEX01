@@ -1,10 +1,36 @@
-
-dbEngine.js
 // =======================================================================
 // 🚀 المحرك المركزي الشامل والمحلي (Standalone Codex Engine - Ultimate)
-// يتضمن كافة دوال إدارة الأبطال، المهارات، الفئات، العتاد، المتجر، ومستويات القوة محلياً
+// نسخة آمنة ومتوافقة مع تطبيقات React Native المحمولة
 // =======================================================================
-class StandaloneCodexEngine {
+
+// ذاكرة تخزين مؤقتة بديلة في حال غياب localStorage في بيئة الموبايل الصرفة
+const memoryStorage = {};
+
+const safeStorage = {
+    getItem: (key) => {
+        try {
+            if (typeof localStorage !== 'undefined' && localStorage.getItem) {
+                return localStorage.getItem(key);
+            }
+        } catch (e) {
+            console.log("Storage read error:", e);
+        }
+        return memoryStorage[key] || null;
+    },
+    setItem: (key, value) => {
+        try {
+            if (typeof localStorage !== 'undefined' && localStorage.setItem) {
+                localStorage.setItem(key, value);
+                return;
+            }
+        } catch (e) {
+            console.log("Storage write error:", e);
+        }
+        memoryStorage[key] = value;
+    }
+};
+
+export default class StandaloneCodexEngine {
 constructor() {
 this.storageKeys = {
 heroes: "rpg_heroes",
@@ -21,107 +47,119 @@ this.initDefaults();
 }
 
 initDefaults() {
-    if (!localStorage.getItem(this.storageKeys.heroes)) {
-        localStorage.setItem(this.storageKeys.heroes, JSON.stringify([
-            {
-                id: "hero_1",
-                hero_name: "البطل الأسطوري",
-                hero_avatar: "",
-                hero_level: 1,
-                hero_exp: 0,
-                hero_max_exp: 100,
-                hero_strength: 15,
-                hero_agility: 12,
-                hero_body: 10,
-                hero_spirit: 10,
-                hero_wealth: 500,
-                hero_hp: 100,
-                hero_max_hp: 100,
-                hero_mp: 50,
-                hero_max_mp: 50,
-                hero_skills: [],
-                hero_inventory: [],
-                hero_quests: []
-            }
-        ]));
-    }
+    try {
+        if (!safeStorage.getItem(this.storageKeys.heroes)) {
+            safeStorage.setItem(this.storageKeys.heroes, JSON.stringify([
+                {
+                    id: "hero_1",
+                    hero_name: "البطل الأسطوري",
+                    hero_avatar: "",
+                    hero_level: 1,
+                    hero_exp: 0,
+                    hero_max_exp: 100,
+                    hero_strength: 15,
+                    hero_agility: 12,
+                    hero_body: 10,
+                    hero_spirit: 10,
+                    hero_wealth: 500,
+                    hero_hp: 100,
+                    hero_max_hp: 100,
+                    hero_mp: 50,
+                    hero_max_mp: 50,
+                    hero_skills: [],
+                    hero_inventory: [],
+                    hero_quests: []
+                }
+            ]));
+        }
 
-    if (!localStorage.getItem(this.storageKeys.backpack)) {
-        localStorage.setItem(this.storageKeys.backpack, JSON.stringify([
-            { id: "item_1", name: "سيف البداية الحاد", category: "الأسلحة", subCategory: "سيوف", desc: "سيف قوي للمبتدئين", img: "", bonusStr: 5, bonusAgi: 2, bonusBody: 0, bonusSpirit: 0 }
-        ]));
-    }
+        if (!safeStorage.getItem(this.storageKeys.backpack)) {
+            safeStorage.setItem(this.storageKeys.backpack, JSON.stringify([
+                { id: "item_1", name: "سيف البداية الحاد", category: "الأسلحة", subCategory: "سيوف", desc: "سيف قوي للمبتدئين", img: "", bonusStr: 5, bonusAgi: 2, bonusBody: 0, bonusSpirit: 0 }
+            ]));
+        }
 
-    if (!localStorage.getItem(this.storageKeys.skills)) {
-        localStorage.setItem(this.storageKeys.skills, JSON.stringify([
-            { id: "skill_1", name: "ضربة قاضية", category: "القدرات الهجومية", subCategory: "ضربات قاضية", desc: "ضربة قوية تضاعف الضرر", img: "", bonusStr: 10, bonusAgi: 0, bonusBody: 0, bonusSpirit: 0 }
-        ]));
-    }
+        if (!safeStorage.getItem(this.storageKeys.skills)) {
+            safeStorage.setItem(this.storageKeys.skills, JSON.stringify([
+                { id: "skill_1", name: "ضربة قاضية", category: "القدرات الهجومية", subCategory: "ضربات قاضية", desc: "ضربة قوية تضاعف الضرر", img: "", bonusStr: 10, bonusAgi: 0, bonusBody: 0, bonusSpirit: 0 }
+            ]));
+        }
 
-    if (!localStorage.getItem(this.storageKeys.shop)) {
-        localStorage.setItem(this.storageKeys.shop, JSON.stringify([
-            { id: "shop_1", name: "إكسير الصحة الملكي", price: 50, category: "الجرعات", subCategory: "إكسير الصحة", desc: "يعيد كامل الصحة", img: "", bonusStr: 0, bonusAgi: 0, bonusBody: 5, bonusSpirit: 0 }
-        ]));
-    }
+        if (!safeStorage.getItem(this.storageKeys.shop)) {
+            safeStorage.setItem(this.storageKeys.shop, JSON.stringify([
+                { id: "shop_1", name: "إكسير الصحة الملكي", price: 50, category: "الجرعات", subCategory: "إكسير الصحة", desc: "يعيد كامل الصحة", img: "", bonusStr: 0, bonusAgi: 0, bonusBody: 5, bonusSpirit: 0 }
+            ]));
+        }
 
-    if (!localStorage.getItem(this.storageKeys.quests)) {
-        localStorage.setItem(this.storageKeys.quests, JSON.stringify([
-            { name: "مهمة تطهير الغابة", desc: "القضاء على الوحوش الضعيفة", expReward: 50, wealthReward: 20 }
-        ]));
-    }
+        if (!safeStorage.getItem(this.storageKeys.quests)) {
+            safeStorage.setItem(this.storageKeys.quests, JSON.stringify([
+                { name: "مهمة تطهير الغابة", desc: "القضاء على الوحوش الضعيفة", expReward: 50, wealthReward: 20 }
+            ]));
+        }
 
-    if (!localStorage.getItem(this.storageKeys.levels)) {
-        localStorage.setItem(this.storageKeys.levels, JSON.stringify({
-            "قوة التدمير": {
-                systemImg: "",
-                categories: {
-                    "الفئة الأولى: فئة الإنسان": {
-                        levels: {
-                            "المستوى 1: طفل بشري": { age: "0 - 1 سنة", power: "0.2", desc: "مراحل النمو المبكرة", img: "" },
-                            "المستوى 2: الإنسان العادي": { age: "6 - 12 سنة", power: "1.0", desc: "المرجعية الأساسية", img: "" }
+        if (!safeStorage.getItem(this.storageKeys.levels)) {
+            safeStorage.setItem(this.storageKeys.levels, JSON.stringify({
+                "قوة التدمير": {
+                    systemImg: "",
+                    categories: {
+                        "الفئة الأولى: فئة الإنسان": {
+                            levels: {
+                                "المستوى 1: طفل بشري": { age: "0 - 1 سنة", power: "0.2", desc: "مراحل النمو المبكرة", img: "" },
+                                "المستوى 2: الإنسان العادي": { age: "6 - 12 سنة", power: "1.0", desc: "المرجعية الأساسية", img: "" }
+                            }
                         }
                     }
                 }
-            }
-        }));
-    }
+            }));
+        }
 
-    if (!localStorage.getItem(this.storageKeys.backpackCategories)) {
-        localStorage.setItem(this.storageKeys.backpackCategories, JSON.stringify({
-            "الأسلحة": ["سيوف", "خناجر", "دروع", "فؤوس"],
-            "الجرعات": ["إكسير الصحة", "إكسير المانا", "سموم"],
-            "الملابس": ["خوذات", "دروع بدنية", "أحذية"],
-            "أشياء أخرى": ["أدوات", "مستلزمات"],
-            "عام / متفرقات": ["عامة"]
-        }));
-    }
+        if (!safeStorage.getItem(this.storageKeys.backpackCategories)) {
+            safeStorage.setItem(this.storageKeys.backpackCategories, JSON.stringify({
+                "الأسلحة": ["سيوف", "خناجر", "دروع", "فؤوس"],
+                "الجرعات": ["إكسير الصحة", "إكسير المانا", "سموم"],
+                "الملابس": ["خوذات", "دروع بدنية", "أحذية"],
+                "أشياء أخرى": ["أدوات", "مستلزمات"],
+                "عام / متفرقات": ["عامة"]
+            }));
+        }
 
-    if (!localStorage.getItem(this.storageKeys.skillCategories)) {
-        localStorage.setItem(this.storageKeys.skillCategories, JSON.stringify({
-            "القدرات الهجومية": ["ضربات قاضية", "هجمات مساحية", "مهارات اسطورية"],
-            "التعاويذ السحرية": ["عناصر النار", "عناصر الجليد", "تعاويذ الشفاء"],
-            "المواهب السلبية": ["زيادة السرعة", "تحمل الألم", "تركيز ذهني"]
-        }));
-    }
+        if (!safeStorage.getItem(this.storageKeys.skillCategories)) {
+            safeStorage.setItem(this.storageKeys.skillCategories, JSON.stringify({
+                "القدرات الهجومية": ["ضربات قاضية", "هجمات مساحية", "مهارات اسطورية"],
+                "التعاويذ السحرية": ["عناصر النار", "عناصر الجليد", "تعاويذ الشفاء"],
+                "المواهب السلبية": ["زيادة السرعة", "تحمل الألم", "تركيز ذهني"]
+            }));
+        }
 
-    if (!localStorage.getItem(this.storageKeys.shopCategories)) {
-        localStorage.setItem(this.storageKeys.shopCategories, JSON.stringify({
-            "الأسلحة": ["سيوف", "خناجر", "دروع", "فؤوس"],
-            "المهارات": ["قدرات هجومية", "تعاويذ سحرية", "مواهب سلبية"],
-            "الجرعات": ["إكسير الصحة", "إكسير المانا", "سموم"],
-            "الملابس": ["خوذات", "دروع بدنية", "أحذية"],
-            "أشياء أخرى": ["أدوات", "مستلزمات"]
-        }));
+        if (!safeStorage.getItem(this.storageKeys.shopCategories)) {
+            safeStorage.setItem(this.storageKeys.shopCategories, JSON.stringify({
+                "الأسلحة": ["سيوف", "خناجر", "دروع", "فؤوس"],
+                "المهارات": ["قدرات هجومية", "تعاويذ سحرية", "مواهب سلبية"],
+                "الجرعات": ["إكسير الصحة", "إكسير المانا", "سموم"],
+                "الملابس": ["خوذات", "دروع بدنية", "أحذية"],
+                "أشياء أخرى": ["أدوات", "مستلزمات"]
+            }));
+        }
+    } catch (err) {
+        console.log("Init defaults error:", err);
     }
 }
 
 getData(key) {
-    let data = localStorage.getItem(this.storageKeys[key] || key);
-    return data ? JSON.parse(data) : [];
+    try {
+        let data = safeStorage.getItem(this.storageKeys[key] || key);
+        return data ? JSON.parse(data) : [];
+    } catch (e) {
+        return [];
+    }
 }
 
 saveData(key, data) {
-    localStorage.setItem(this.storageKeys[key] || key, JSON.stringify(data));
+    try {
+        safeStorage.setItem(this.storageKeys[key] || key, JSON.stringify(data));
+    } catch (e) {
+        console.log("Save data error:", e);
+    }
 }
 
 // =========================================================================
