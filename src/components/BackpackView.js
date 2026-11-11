@@ -2,25 +2,42 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Modal } from 'react-native';
 
 export default function BackpackView({ codexEngine, heroId, theme, dict }) {
-    const [selectedCategory, setSelectedCategory] = useState('الكل');
+    const [selectedCategory, setSelectedCategory] = useState('الأسلحة');
+    const [selectedSubCategory, setSelectedSubCategory] = useState('سيوف');
     const [selectedItem, setSelectedItem] = useState(null);
     const [searchMode, setSearchMode] = useState(false);
     const [globalQuery, setGlobalQuery] = useState('');
-    
-    // نوافذ الإدارة والبحث عن الأبطال للارتداء والنزع
+
+    // نوافذ الإدارة والتحكم (Modal)
     const [modalVisible, setModalVisible] = useState(false);
     const [heroSearchQuery, setHeroSearchQuery] = useState('');
     const [selectedHeroPathForEquip, setSelectedHeroPathForEquip] = useState('');
 
-    const categories = codexEngine.getBackpackCategories();
-    const allItems = codexEngine.getData('backpack');
-    
-    // جلب قائمة الأبطال المتاحة من المحرك
-    const rawHeroes = codexEngine.getData('heroes') || [];
+    // نافذة إضافة عنصر جديد
+    const [addItemModalVisible, setAddItemModalVisible] = useState(false);
+    const [newItemName, setNewItemName] = useState('');
+    const [newItemDesc, setNewItemDesc] = useState('');
+    const [newBonusStr, setNewBonusStr] = useState('0');
+    const [newBonusAgi, setNewBonusAgi] = useState('0');
+    const [newBonusBody, setNewBonusBody] = useState('0');
+    const [newBonusSpirit, setNewBonusSpirit] = useState('0');
+    const [newItemImg, setNewItemImg] = useState('');
+    const [imgSearchQuery, setImgSearchQuery] = useState('');
 
-    const filteredItems = selectedCategory === 'الكل' 
-        ? allItems 
-        : allItems.filter(item => item.category === selectedCategory);
+    const categories = codexEngine.getBackpackCategories() || {
+        "الأسلحة": ["سيوف", "خناجر", "دروع", "فؤوس"],
+        "الجرعات": ["إكسير الصحة", "إكسير المانا", "سموم"],
+        "الملابس": ["خوذات", "دروع بدنية", "أحذية"]
+    };
+    
+    const allItems = codexEngine.getData('backpack') || [];
+    const rawHeroes = codexEngine.getData('heroes') || [];
+    const imageFiles = codexEngine.getData('images') || [];
+
+    // فلترة العناصر
+    const filteredItems = allItems.filter(item => 
+        item.category === selectedCategory && (selectedSubCategory ? item.subCategory === selectedSubCategory : true)
+    );
 
     const searchFilteredItems = allItems.filter(item => 
         item.name.toLowerCase().includes(globalQuery.toLowerCase())
@@ -41,10 +58,39 @@ export default function BackpackView({ codexEngine, heroId, theme, dict }) {
         setModalVisible(false);
     };
 
+    const handleSaveNewItem = () => {
+        if (!newItemName.trim()) {
+            alert("⚠️ برجاء إدخال اسم العنصر!");
+            return;
+        }
+        const itemData = {
+            name: newItemName.trim(),
+            category: selectedCategory,
+            subCategory: selectedSubCategory || 'عام',
+            desc: newItemDesc.trim(),
+            img: newItemImg,
+            bonusStr: parseInt(newBonusStr) || 0,
+            bonusAgi: parseInt(newBonusAgi) || 0,
+            bonusBody: parseInt(newBonusBody) || 0,
+            bonusSpirit: parseInt(newBonusSpirit) || 0
+        };
+
+        codexEngine.addBackpackItem(itemData);
+        alert("✨ تم حفظ العنصر في الحقيبة بنجاح!");
+        setAddItemModalVisible(false);
+        setNewItemName('');
+        setNewItemDesc('');
+        setNewBonusStr('0');
+        setNewBonusAgi('0');
+        setNewBonusBody('0');
+        setNewBonusSpirit('0');
+        setNewItemImg('');
+    };
+
     return (
         <View style={styles.container}>
-            {/* زر العودة لو كنا داخل تفاصيل عنصر أو وضع البحث */}
             {selectedItem ? (
+                /* --- شاشة تفاصيل العنصر مع أزرار التعديل والحذف والارتداء --- */
                 <View style={styles.detailsBox}>
                     <TouchableOpacity 
                         style={[styles.backBtn, { backgroundColor: theme.accent }]}
@@ -56,7 +102,7 @@ export default function BackpackView({ codexEngine, heroId, theme, dict }) {
                     <View style={styles.detailsContent}>
                         <Image source={{ uri: selectedItem.img || "https://i.imgur.com/8Km9tLL.png" }} style={styles.detailsImg} resizeMode="cover" />
                         <Text style={[styles.itemNameLarge, { color: theme.accent }]}>{selectedItem.name}</Text>
-                        <Text style={styles.itemCategoryText}>التصنيف: {selectedItem.category}</Text>
+                        <Text style={styles.itemCategoryText}>التصنيف: {selectedItem.category} ➔ {selectedItem.subCategory}</Text>
 
                         <View style={styles.statsBox}>
                             <Text style={styles.statsBoxTitle}>الخصائص المكتسبة:</Text>
@@ -72,12 +118,23 @@ export default function BackpackView({ codexEngine, heroId, theme, dict }) {
                                 style={[styles.actionButton, { backgroundColor: '#2ed573' }]}
                                 onPress={() => setModalVisible(true)}
                             >
-                                <Text style={styles.btnText}>⚔️ إطارة التجهيز (ارتداء / نزع)</Text>
+                                <Text style={styles.btnText}>⚔️ إدارة التجهيز (ارتداء/نزع)</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={[styles.actionButton, { backgroundColor: '#ff4757' }]}
+                                onPress={() => {
+                                    codexEngine.deleteBackpackItem(selectedItem.name);
+                                    setSelectedItem(null);
+                                    alert("🗑️ تم حذف العنصر بنجاح!");
+                                }}
+                            >
+                                <Text style={styles.btnText}>🗑️ حذف</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
                 </View>
             ) : searchMode ? (
+                /* --- شاشة البحث الشامل في الحقيبة --- */
                 <View style={styles.searchContainer}>
                     <TouchableOpacity 
                         style={[styles.backBtn, { backgroundColor: '#3498db' }]}
@@ -104,41 +161,60 @@ export default function BackpackView({ codexEngine, heroId, theme, dict }) {
                     </ScrollView>
                 </View>
             ) : (
+                /* --- الشاشة الرئيسية للحقيبة --- */
                 <View style={styles.mainContainer}>
                     <Text style={[styles.title, { color: theme.accent }]}>🎒 حقيبة الظهر الأسطورية</Text>
 
-                    {/* زر البحث الشامل */}
-                    <TouchableOpacity 
-                        style={[styles.searchScreenBtn, { backgroundColor: '#8e44ad' }]}
-                        onPress={() => setSearchMode(true)}
-                    >
-                        <Text style={styles.btnText}>🔍 البحث الشامل في جميع محتويات الحقيبة</Text>
-                    </TouchableOpacity>
-
-                    {/* سلايدر فئات الحقيبة */}
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catTrack}>
+                    {/* أزرار الإضافة والبحث الشامل */}
+                    <View style={styles.topActionRow}>
                         <TouchableOpacity 
-                            style={[styles.catChip, selectedCategory === 'الكل' && { backgroundColor: theme.accent }]}
-                            onPress={() => setSelectedCategory('الكل')}
+                            style={[styles.topActionBtn, { backgroundColor: '#2ed573' }]}
+                            onPress={() => setAddItemModalVisible(true)}
                         >
-                            <Text style={[styles.catText, selectedCategory === 'الكل' && styles.activeCatText]}>الكل</Text>
+                            <Text style={styles.btnText}>➕ إضافة عنصر جديد</Text>
                         </TouchableOpacity>
+                        <TouchableOpacity 
+                            style={[styles.topActionBtn, { backgroundColor: '#8e44ad' }]}
+                            onPress={() => setSearchMode(true)}
+                        >
+                            <Text style={styles.btnText}>🔍 بحث شامل</Text>
+                        </TouchableOpacity>
+                    </View>
 
+                    {/* سلايدر الفئات الرئيسية */}
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catTrack}>
                         {Object.keys(categories).map((catName, idx) => (
                             <TouchableOpacity 
                                 key={idx}
                                 style={[styles.catChip, selectedCategory === catName && { backgroundColor: theme.accent }]}
-                                onPress={() => setSelectedCategory(catName)}
+                                onPress={() => {
+                                    setSelectedCategory(catName);
+                                    const subs = categories[catName] || [];
+                                    setSelectedSubCategory(subs[0] || '');
+                                }}
                             >
                                 <Text style={[styles.catText, selectedCategory === catName && styles.activeCatText]}>{catName}</Text>
                             </TouchableOpacity>
                         ))}
                     </ScrollView>
 
-                    {/* شبكة العناصر داخل الحقيبة */}
+                    {/* سلايدر الفئات الفرعية */}
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catTrack}>
+                        {(categories[selectedCategory] || []).map((subCat, idx) => (
+                            <TouchableOpacity 
+                                key={idx}
+                                style={[styles.catChip, selectedSubCategory === subCat && { backgroundColor: theme.accent }]}
+                                onPress={() => setSelectedSubCategory(subCat)}
+                            >
+                                <Text style={[styles.catText, selectedSubCategory === subCat && styles.activeCatText]}>{subCat}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+
+                    {/* شبكة العناصر */}
                     <ScrollView contentContainerStyle={styles.itemsGrid}>
                         {filteredItems.length === 0 ? (
-                            <Text style={styles.emptyText}>لا توجد عناصر في هذه الفئة.</Text>
+                            <Text style={styles.emptyText}>لا توجد عناصر في هذا التصنيف الفرعي حالياً.</Text>
                         ) : (
                             filteredItems.map((item, idx) => (
                                 <TouchableOpacity key={idx} style={styles.gridCell} onPress={() => setSelectedItem(item)}>
@@ -151,11 +227,76 @@ export default function BackpackView({ codexEngine, heroId, theme, dict }) {
                 </View>
             )}
 
-            {/* نافذة منبثقة (Modal) لإدارة الارتداء والنزع للأبطال مع البحث */}
+            {/* --- نافذة إضافة عنصر جديد للحقيبة --- */}
+            <Modal visible={addItemModalVisible} transparent={true} animationType="slide">
+                <View style={styles.modalOverlay}>
+                    <ScrollView contentContainerStyle={[styles.modalContent, { backgroundColor: '#1e1e2f', borderColor: theme.accent }]}>
+                        <Text style={styles.modalTitle}>➕ إضافة عنصر جديد إلى الحقيبة</Text>
+                        
+                        <TextInput 
+                            style={styles.modalInput}
+                            placeholder="اسم العنصر..."
+                            placeholderTextColor="#a1a1aa"
+                            value={newItemName}
+                            onChangeText={setNewItemName}
+                        />
+
+                        <TextInput 
+                            style={[styles.modalInput, { height: 60 }]}
+                            placeholder="وصف العنصر..."
+                            placeholderTextColor="#a1a1aa"
+                            multiline
+                            value={newItemDesc}
+                            onChangeText={setNewItemDesc}
+                        />
+
+                        <Text style={styles.subLabel}>مكافآت الإحصائيات:</Text>
+                        <View style={styles.statsInputRow}>
+                            <TextInput style={styles.statInput} placeholder="STR" placeholderTextColor="#aaa" keyboardType="numeric" value={newBonusStr} onChangeText={setNewBonusStr} />
+                            <TextInput style={styles.statInput} placeholder="AGI" placeholderTextColor="#aaa" keyboardType="numeric" value={newBonusAgi} onChangeText={setNewBonusAgi} />
+                            <TextInput style={styles.statInput} placeholder="BODY" placeholderTextColor="#aaa" keyboardType="numeric" value={newBonusBody} onChangeText={setNewBonusBody} />
+                            <TextInput style={styles.statInput} placeholder="SPIRIT" placeholderTextColor="#aaa" keyboardType="numeric" value={newBonusSpirit} onChangeText={setNewBonusSpirit} />
+                        </View>
+
+                        <Text style={styles.subLabel}>اختر صورة العنصر:</Text>
+                        <TextInput 
+                            style={styles.modalSearchInput}
+                            placeholder="🔍 ابحث عن اسم الصورة..."
+                            placeholderTextColor="#a1a1aa"
+                            value={imgSearchQuery}
+                            onChangeText={setImgSearchQuery}
+                        />
+                        <ScrollView horizontal style={{ maxHeight: 50 }}>
+                            {imageFiles
+                                .filter(img => img.name.toLowerCase().includes(imgSearchQuery.toLowerCase()))
+                                .map((imgFile, i) => (
+                                    <TouchableOpacity 
+                                        key={i} 
+                                        style={[styles.imgSelectItem, newItemImg === imgFile.uri && { borderColor: '#2ed573', borderWidth: 2 }]}
+                                        onPress={() => setNewItemImg(imgFile.uri)}
+                                    >
+                                        <Image source={{ uri: imgFile.uri }} style={{ width: 40, height: 40, borderRadius: 4 }} />
+                                    </TouchableOpacity>
+                                ))}
+                        </ScrollView>
+
+                        <View style={styles.modalBtnRow}>
+                            <TouchableOpacity style={[styles.modalBtn, { backgroundColor: '#2ed573' }]} onPress={handleSaveNewItem}>
+                                <Text style={styles.btnText}>حفظ العنصر</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.modalBtn, { backgroundColor: '#ff4757' }]} onPress={() => setAddItemModalVisible(false)}>
+                                <Text style={styles.btnText}>إلغاء</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
+                </View>
+            </Modal>
+
+            {/* --- نافذة اختيار البطل لارتداء أو نزع العتاد --- */}
             <Modal visible={modalVisible} transparent={true} animationType="slide">
                 <View style={styles.modalOverlay}>
                     <View style={[styles.modalContent, { backgroundColor: '#1e1e2f', borderColor: theme.accent }]}>
-                        <Text style={styles.modalTitle}>اختر البطل لـ ({selectedItem?.name})</Text>
+                        <Text style={styles.modalTitle}>⚔️ إدارة التجهيز لـ ({selectedItem?.name})</Text>
                         
                         <TextInput 
                             style={styles.modalSearchInput}
@@ -203,9 +344,10 @@ export default function BackpackView({ codexEngine, heroId, theme, dict }) {
 
 const styles = StyleSheet.create({
     container: { flex: 1, paddingBottom: 20 },
-    mainContainer: { gap: 12 },
+    mainContainer: { gap: 10 },
     title: { fontSize: 13, fontWeight: 'bold', marginBottom: 4 },
-    searchScreenBtn: { padding: 10, borderRadius: 8, alignItems: 'center', marginBottom: 6 },
+    topActionRow: { flexDirection: 'row', gap: 8, marginBottom: 4 },
+    topActionBtn: { flex: 1, padding: 8, borderRadius: 8, alignItems: 'center' },
     catTrack: { flexDirection: 'row', gap: 6, paddingVertical: 2 },
     catChip: { backgroundColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
     catText: { fontSize: 9, color: '#fff', fontWeight: 'bold' },
@@ -227,14 +369,19 @@ const styles = StyleSheet.create({
     statsText: { fontSize: 9, color: '#2ed573', textAlign: 'center' },
     descText: { fontSize: 10, color: '#fff', textAlign: 'center', marginVertical: 4 },
     actionRow: { flexDirection: 'row', gap: 8, width: '100%', justifyContent: 'center', marginTop: 5 },
-    actionButton: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 6 },
+    actionButton: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 6 },
     searchContainer: { gap: 10 },
     searchInput: { borderWidth: 1, borderRadius: 8, padding: 8, fontSize: 11, backgroundColor: 'rgba(255,255,255,0.05)' },
     modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' },
-    modalContent: { width: '85%', padding: 20, borderRadius: 12, borderWidth: 2, gap: 10 },
-    modalTitle: { fontSize: 12, fontWeight: 'bold', color: '#ffd700', textAlign: 'center' },
-    modalSearchInput: { borderWidth: 1, borderColor: '#d4af37', borderRadius: 6, padding: 6, color: '#ffd700', backgroundColor: '#2a2a40', fontSize: 10 },
-    heroSelectList: { maxHeight: 150, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 6 },
+    modalContent: { width: '85%', padding: 20, borderRadius: 12, borderWidth: 2, gap: 10, maxHeight: '80%' },
+    modalTitle: { fontSize: 12, fontWeight: 'bold', color: '#ffd700', textAlign: 'center', marginBottom: 5 },
+    modalInput: { borderWidth: 1, borderColor: '#d4af37', borderRadius: 6, padding: 6, color: '#ffd700', backgroundColor: '#2a2a40', fontSize: 10, marginBottom: 6 },
+    subLabel: { fontSize: 10, fontWeight: 'bold', color: '#a4b0be', marginTop: 4 },
+    statsInputRow: { flexDirection: 'row', gap: 4, marginBottom: 6 },
+    statInput: { flex: 1, borderWidth: 1, borderColor: '#d4af37', borderRadius: 6, padding: 4, color: '#ffd700', backgroundColor: '#2a2a40', fontSize: 9, textAlign: 'center' },
+    modalSearchInput: { borderWidth: 1, borderColor: '#d4af37', borderRadius: 6, padding: 6, color: '#ffd700', backgroundColor: '#2a2a40', fontSize: 10, marginBottom: 4 },
+    imgSelectItem: { marginRight: 6, padding: 2, borderRadius: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+    heroSelectList: { maxHeight: 120, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 6, marginBottom: 6 },
     heroSelectItem: { padding: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
     heroSelectText: { color: '#fff', fontSize: 10 },
     modalBtnRow: { flexDirection: 'row', gap: 6, marginTop: 5 },
