@@ -139,7 +139,7 @@ export default function App() {
                     return (
                         <TouchableOpacity 
                             key={tab.id}
-                            style={[styles.tabItem, isActive && { backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 14 }])}
+                            style={[styles.tabItem, isActive && { backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 14 }]}
                             onPress={() => setCurrentView(tab.id)}
                         >
                             <Text style={{ fontSize: 15 }}>{tab.icon}</Text>
