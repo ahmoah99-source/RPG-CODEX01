@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import { getTheme, dicts } from './src/database/theme';
 import StandaloneCodexEngine from './src/database/dbEngine';
 
@@ -11,19 +11,50 @@ import ShopView from './src/components/ShopView';
 import SkillsView from './src/components/SkillsView';
 import LevelsView from './src/components/LevelsView';
 
-const codexEngine = new StandaloneCodexEngine();
-
 export default function App() {
+    const [codexEngine, setCodexEngine] = useState(null);
+    const [isLoaded, setIsLoaded] = useState(false);
     const [currentView, setCurrentView] = useState('home');
     const [themeMode, setThemeMode] = useState('darkGlass');
     const [lang, setLang] = useState('ar');
     const [selectedHeroId, setSelectedHeroId] = useState(null);
 
+    // تهيئة المحرك بأمان داخل useEffect لمنع الانهيار الفوري
+    useEffect(() => {
+        try {
+            const engine = new StandaloneCodexEngine();
+            setCodexEngine(engine);
+        } catch (e) {
+            console.log("Error initializing engine:", e);
+        } finally {
+            setIsLoaded(true);
+        }
+    }, []);
+
+    if (!isLoaded || !codexEngine) {
+        const fallbackTheme = getTheme('darkGlass');
+        return (
+            <View style={[styles.container, { backgroundColor: fallbackTheme.mainBg, justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color={fallbackTheme.accent} />
+                <Text style={{ color: fallbackTheme.text, marginTop: 10, fontSize: 12 }}>جاري تحميل عالم Character Codex...</Text>
+            </View>
+        );
+    }
+
     const currentTheme = getTheme(themeMode);
     const currentDict = dicts[lang] || dicts.ar;
 
-    // تحديد البطل النشط
-    const activeHeroes = codexEngine.getData('heroes');
+    // تحديد البطل النشط بأمان تام مع التأكد من وجود مصفوفة
+    let activeHeroes = [];
+    try {
+        const rawHeroes = codexEngine.getData('heroes');
+        if (Array.isArray(rawHeroes)) {
+            activeHeroes = rawHeroes;
+        }
+    } catch (err) {
+        activeHeroes = [];
+    }
+
     const activeHeroId = selectedHeroId || (activeHeroes.length > 0 ? activeHeroes[0].id : null);
     const heroData = activeHeroId ? codexEngine.getHeroData(activeHeroId) : null;
 
@@ -108,7 +139,7 @@ export default function App() {
                     return (
                         <TouchableOpacity 
                             key={tab.id}
-                            style={[styles.tabItem, isActive && { backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 14 }]}
+                            style={[styles.tabItem, isActive && { backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 14 }])}
                             onPress={() => setCurrentView(tab.id)}
                         >
                             <Text style={{ fontSize: 15 }}>{tab.icon}</Text>
