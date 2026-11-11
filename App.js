@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
-import { getTheme, themesMap, dicts } from './src/database/theme';
+import { getTheme, themesMap, dicts } from './src/theme';
 import StandaloneCodexEngine from './src/database/dbEngine';
 
-import HomeView from './src/components/HomeView';
-import HeroesView from './src/components/HeroesView';
-import HeroDetailsView from './src/components/HeroDetailsView';
-import BackpackView from './src/components/BackpackView';
-import ShopView from './src/components/ShopView';
-import SkillsView from './src/components/SkillsView';
-import LevelsView from './src/components/LevelsView';
+import HomeView from './src/views/HomeView';
+import HeroesView from './src/views/HeroesView';
+import HeroDetailsView from './src/views/HeroDetailsView';
+import BackpackView from './src/views/BackpackView';
+import ShopView from './src/views/ShopView';
+import SkillsView from './src/views/SkillsView';
+import LevelsView from './src/views/LevelsView';
 
 export default function App() {
     const [codexEngine, setCodexEngine] = useState(null);
@@ -19,7 +19,7 @@ export default function App() {
     const [lang, setLang] = useState('ar');
     const [selectedHeroId, setSelectedHeroId] = useState(null);
 
-    // تهيئة المحرك بأمان داخل useEffect لمنع الانهيار الفوري
+    // تهيئة المحرك بأمان داخل useEffect لمنع الانهيار وضمان العمل على الموبايل
     useEffect(() => {
         try {
             const engine = new StandaloneCodexEngine();
@@ -44,7 +44,7 @@ export default function App() {
     const currentTheme = getTheme(themeMode);
     const currentDict = dicts[lang] || dicts.ar;
 
-    // تحديد البطل النشط بأمان تام مع التأكد من وجود مصفوفة
+    // تحديد البطل النشط بأمان تام
     let activeHeroes = [];
     try {
         const rawHeroes = codexEngine.getData('heroes');
@@ -73,7 +73,7 @@ export default function App() {
             case 'skills':
                 return <SkillsView codexEngine={codexEngine} heroId={activeHeroId} theme={currentTheme} dict={currentDict} />;
             case 'levels':
-                return <LevelsView codexEngine={codexEngine} theme={currentTheme} dict={currentDict} />;
+                return <LevelsView codexEngine={codexEngine} heroId={activeHeroId} theme={currentTheme} dict={currentDict} />;
             case 'settings':
                 return (
                     <View style={styles.settingsBox}>
@@ -140,7 +140,7 @@ export default function App() {
                 )}
             </ScrollView>
 
-            {/* الزرار العائم (Floating Action Button) للاختصارات السريعة */}
+            {/* الزرار العائم للاختصارات السريعة */}
             <TouchableOpacity 
                 style={[styles.floatingBtn, { backgroundColor: currentTheme.accent }]}
                 onPress={() => setCurrentView('heroes')}
