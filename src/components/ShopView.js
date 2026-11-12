@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Modal } from 'react-native';
+import * as ImagePicker from 'expo-image-picker'; // 🌟 استيراد مكتبة اختيار الصور من الهاتف
 
 export default function ShopView({ codexEngine, heroId, theme, dict }) {
     const [selectedCategory, setSelectedCategory] = useState('الكل');
@@ -10,9 +11,38 @@ export default function ShopView({ codexEngine, heroId, theme, dict }) {
     const [heroSearchQuery, setHeroSearchQuery] = useState('');
     const [selectedHeroPathForBuy, setSelectedHeroPathForBuy] = useState('');
 
+    // نافذة إضافة سلعة جديدة للمتجر (اختياري احترافي)
+    const [addShopModalVisible, setAddShopModalVisible] = useState(false);
+    const [newShopName, setNewShopName] = useState('');
+    const [newShopPrice, setNewShopPrice] = useState('50');
+    const [newShopDesc, setNewShopDesc] = useState('');
+    const [newShopImg, setNewShopImg] = useState('');
+
     const categories = codexEngine.getShopCategories();
     const allItems = codexEngine.getData('shop') || [];
     const rawHeroes = codexEngine.getData('heroes') || [];
+    const imageFiles = codexEngine.getData('images') || [];
+
+    // 🌟 دالة فتح معرض صور الهاتف لاختيار صورة السلعة في المتجر
+    const pickImageFromPhone = async () => {
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        
+        if (!permissionResult.granted) {
+            alert("⚠️ عذراً، يجب السماح للطبيق بالوصول للصور لاختيار صورة السلعة!");
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            setNewShopImg(result.assets[0].uri);
+        }
+    };
 
     const filteredItems = selectedCategory === 'الكل' 
         ? allItems 
@@ -52,7 +82,7 @@ export default function ShopView({ codexEngine, heroId, theme, dict }) {
                         <View style={styles.statsBox}>
                             <Text style={styles.statsBoxTitle}>الخصائص:</Text>
                             <Text style={styles.statsText}>
-                                القوة +{selectedItem.bonusStr} | الرشاقة +{selectedItem.bonusAgi} | الجسد +{selectedItem.bonusBody} | الروح +{selectedItem.bonusSpirit}
+                                القوة +{selectedItem.bonusStr || 0} | الرشاقة +{selectedItem.bonusAgi || 0} | الجسد +{selectedItem.bonusBody || 0} | الروح +{selectedItem.bonusSpirit || 0}
                             </Text>
                         </View>
 
