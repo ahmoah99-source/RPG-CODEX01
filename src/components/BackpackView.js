@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Modal } from 'react-native';
+import * as ImagePicker from 'expo-image-picker'; // 🌟 1. استيراد مكتبة اختيار الصور من الهاتف
 
 export default function BackpackView({ codexEngine, heroId, theme, dict }) {
     const [selectedCategory, setSelectedCategory] = useState('الأسلحة');
@@ -33,6 +34,27 @@ export default function BackpackView({ codexEngine, heroId, theme, dict }) {
     const allItems = codexEngine.getData('backpack') || [];
     const rawHeroes = codexEngine.getData('heroes') || [];
     const imageFiles = codexEngine.getData('images') || [];
+
+    // 🌟 2. دالة فتح معرض صور الهاتف لاختيار صورة العنصر
+    const pickImageFromPhone = async () => {
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        
+        if (!permissionResult.granted) {
+            alert("⚠️ عذراً، يجب السماح للطبيق بالوصول للصور لاختيار صورة العنصر!");
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            setNewItemImg(result.assets[0].uri);
+        }
+    };
 
     // فلترة العناصر
     const filteredItems = allItems.filter(item => 
@@ -68,7 +90,7 @@ export default function BackpackView({ codexEngine, heroId, theme, dict }) {
             category: selectedCategory,
             subCategory: selectedSubCategory || 'عام',
             desc: newItemDesc.trim(),
-            img: newItemImg,
+            img: newItemImg || "https://i.imgur.com/8Km9tLL.png",
             bonusStr: parseInt(newBonusStr) || 0,
             bonusAgi: parseInt(newBonusAgi) || 0,
             bonusBody: parseInt(newBonusBody) || 0,
@@ -227,7 +249,7 @@ export default function BackpackView({ codexEngine, heroId, theme, dict }) {
                 </View>
             )}
 
-            {/* --- نافذة إضافة عنصر جديد للحقيبة --- */}
+            {/* --- نافذة إضافة عنصر جديد للحقيبة (مع زرار اختيار صورة من الهاتف) --- */}
             <Modal visible={addItemModalVisible} transparent={true} animationType="slide">
                 <View style={styles.modalOverlay}>
                     <ScrollView contentContainerStyle={[styles.modalContent, { backgroundColor: '#1e1e2f', borderColor: theme.accent }]}>
@@ -258,10 +280,26 @@ export default function BackpackView({ codexEngine, heroId, theme, dict }) {
                             <TextInput style={styles.statInput} placeholder="SPIRIT" placeholderTextColor="#aaa" keyboardType="numeric" value={newBonusSpirit} onChangeText={setNewBonusSpirit} />
                         </View>
 
-                        <Text style={styles.subLabel}>اختر صورة العنصر:</Text>
+                        {/* 🌟 زرار اختيار الصورة من معرض الهاتف وعرض معاينة لها */}
+                        <Text style={styles.subLabel}>صورة العنصر:</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                            <TouchableOpacity 
+                                style={[styles.pickImgBtn, { backgroundColor: theme.accent }]}
+                                onPress={pickImageFromPhone}
+                            >
+                                <Text style={styles.btnText}>📁 اختر صورة من الهاتف</Text>
+                            </TouchableOpacity>
+                            {newItemImg ? (
+                                <Image source={{ uri: newItemImg }} style={{ width: 45, height: 45, borderRadius: 6, borderWidth: 1, borderColor: '#2ed573' }} />
+                            ) : (
+                                <Text style={{ fontSize: 9, color: '#a4b0be' }}>لم يتم اختيار صورة</Text>
+                            )}
+                        </View>
+
+                        {/* خيار الصور الافتراضية القديمة أيضاً إن أراد المستخدم */}
                         <TextInput 
                             style={styles.modalSearchInput}
-                            placeholder="🔍 ابحث عن اسم الصورة..."
+                            placeholder="أو ابحث في الصور الجاهزة..."
                             placeholderTextColor="#a1a1aa"
                             value={imgSearchQuery}
                             onChangeText={setImgSearchQuery}
@@ -380,6 +418,7 @@ const styles = StyleSheet.create({
     statsInputRow: { flexDirection: 'row', gap: 4, marginBottom: 6 },
     statInput: { flex: 1, borderWidth: 1, borderColor: '#d4af37', borderRadius: 6, padding: 4, color: '#ffd700', backgroundColor: '#2a2a40', fontSize: 9, textAlign: 'center' },
     modalSearchInput: { borderWidth: 1, borderColor: '#d4af37', borderRadius: 6, padding: 6, color: '#ffd700', backgroundColor: '#2a2a40', fontSize: 10, marginBottom: 4 },
+    pickImgBtn: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 6, alignItems: 'center' },
     imgSelectItem: { marginRight: 6, padding: 2, borderRadius: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
     heroSelectList: { maxHeight: 120, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 6, marginBottom: 6 },
     heroSelectItem: { padding: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
