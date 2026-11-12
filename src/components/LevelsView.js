@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Modal } from 'react-native';
+import * as ImagePicker from 'expo-image-picker'; // 🌟 1. استيراد مكتبة اختيار الصور من الهاتف
 
 export default function LevelsView({ codexEngine, heroId, theme, dict }) {
     // جلب بيانات أنظمة وقوة ومستويات الطاقة من المحرك
@@ -17,7 +18,7 @@ export default function LevelsView({ codexEngine, heroId, theme, dict }) {
     const [selectedLevelName, setSelectedLevelName] = useState(levelNames[0] || '');
 
     // نوافذ الإدارة والتحكم المنبثقة (Modals)
-    const [modalType, setModalType] = useState(null); // 'addSys', 'editSys', 'addCat', 'editCat', 'addLevel', 'editLevel', 'imagePicker'
+    const [modalType, setModalType] = useState(null); // 'addSys', 'editSys', 'addCat', 'editCat', 'addLevel', 'editLevel', 'editSysImg'
     const [inputVal1, setInputVal1] = useState('');
     const [inputVal2, setInputVal2] = useState('');
     const [inputVal3, setInputVal3] = useState('');
@@ -28,10 +29,31 @@ export default function LevelsView({ codexEngine, heroId, theme, dict }) {
     const imageFiles = codexEngine.getData('images') || [];
     const activeLevelData = currentCatObj.levels[selectedLevelName] || null;
 
+    // 🌟 2. دالة فتح معرض صور الهاتف لاختيار صورة مخصصة
+    const pickImageFromPhone = async () => {
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        
+        if (!permissionResult.granted) {
+            alert("⚠️ عذراً، يجب السماح للطبيق بالوصول للصور لاختيار الصورة!");
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            setSelectedImgPath(result.assets[0].uri);
+        }
+    };
+
     // دوال الحفظ والتعديل عبر محرك التطبيق
     const handleSaveModal = () => {
         if (modalType === 'addSys') {
-            if (!inputVal1.trim()) return alert("⚠️ أخل اسم النظام!");
+            if (!inputVal1.trim()) return alert("⚠️ أدخل اسم النظام!");
             codexEngine.addEnergySystem(inputVal1.trim(), selectedImgPath);
             setSelectedSys(inputVal1.trim());
         } else if (modalType === 'editSys') {
@@ -211,7 +233,7 @@ export default function LevelsView({ codexEngine, heroId, theme, dict }) {
                             {modalType === 'editLevel' && '✏️ تعديل تفاصيل المستوى'}
                         </Text>
 
-                        {(modalType === 'addSys' || modalType === 'editSys' || modalType === 'addCat' || modalType === 'editCat' || modalType === 'addLevel') && (
+                        {(modalType === 'addSys' || modalType === 'editSys' || modalType === 'addCat' || modalType === 'editCat') && (
                             <TextInput 
                                 style={styles.modalInput} 
                                 placeholder="الاسم..." 
@@ -239,13 +261,28 @@ export default function LevelsView({ codexEngine, heroId, theme, dict }) {
                             </>
                         )}
 
-                        {/* اختيار الصورة */}
+                        {/* 🌟 زرار اختيار الصورة من الهاتف ومعارض الصور الجاهزة */}
                         {(modalType === 'addSys' || modalType === 'editSysImg' || modalType === 'addLevel' || modalType === 'editLevel') && (
-                            <View style={{ width: '100%', marginVertical: 6 }}>
-                                <Text style={{ color: '#a4b0be', fontSize: 10, marginBottom: 4 }}>اختر صورة توضيحية:</Text>
+                            <View style={{ width: '100%', marginVertical: 6, gap: 6 }}>
+                                <Text style={{ color: '#a4b0be', fontSize: 10 }}>اختر صورة توضيحية:</Text>
+                                
+                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                    <TouchableOpacity 
+                                        style={[styles.pickImgBtn, { backgroundColor: theme.accent }]}
+                                        onPress={pickImageFromPhone}
+                                    >
+                                        <Text style={styles.btnText}>📁 من الهاتف</Text>
+                                    </TouchableOpacity>
+                                    {selectedImgPath ? (
+                                        <Image source={{ uri: selectedImgPath }} style={{ width: 35, height: 35, borderRadius: 4, borderWidth: 1, borderColor: '#2ed573' }} />
+                                    ) : (
+                                        <Text style={{ fontSize: 9, color: '#a4b0be' }}>لم تختار صورة</Text>
+                                    )}
+                                </div>
+
                                 <TextInput 
                                     style={styles.modalSearchInput}
-                                    placeholder="🔍 ابحث عن اسم الصورة..."
+                                    placeholder="🔍 أو ابحث في الصور الجاهزة..."
                                     placeholderTextColor="#a1a1aa"
                                     value={imgSearchQuery}
                                     onChangeText={setImgSearchQuery}
@@ -282,7 +319,7 @@ export default function LevelsView({ codexEngine, heroId, theme, dict }) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 10, backgroundColor: 'linear-gradient(135deg, #1e1e2f, #2a2a40)' },
+    container: { flex: 1, padding: 10, backgroundColor: '#1e1e2f' },
     title: { fontSize: 14, fontWeight: 'bold', textAlign: 'center', marginBottom: 10 },
     sectionBox: { backgroundColor: 'rgba(0,0,0,0.25)', padding: 8, borderRadius: 6, marginBottom: 8 },
     sectionLabel: { fontSize: 11, color: '#ffd700', fontWeight: 'bold', marginBottom: 4 },
@@ -307,6 +344,7 @@ const styles = StyleSheet.create({
     modalTitle: { fontSize: 12, fontWeight: 'bold', color: '#ffd700', textAlign: 'center' },
     modalInput: { borderWidth: 1, borderColor: '#d4af37', borderRadius: 6, padding: 6, color: '#ffd700', backgroundColor: '#2a2a40', fontSize: 10 },
     modalSearchInput: { borderWidth: 1, borderColor: '#d4af37', borderRadius: 6, padding: 5, color: '#ffd700', backgroundColor: '#2a2a40', fontSize: 9, marginBottom: 4 },
+    pickImgBtn: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6, alignItems: 'center' },
     imgSelectItem: { marginRight: 6, padding: 2, borderRadius: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
     modalBtnRow: { flexDirection: 'row', gap: 6, marginTop: 6 },
     modalBtn: { flex: 1, padding: 8, borderRadius: 6, alignItems: 'center' }
