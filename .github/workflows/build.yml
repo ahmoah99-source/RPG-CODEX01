@@ -41,6 +41,7 @@ jobs:
         run: |
           npm install --legacy-peer-deps
           npm install expo-sqlite@~14.0.4 --legacy-peer-deps
+          npx expo install expo-image-picker
 
       - name: 🛠️ Expo Prebuild (Generate Android Native Folders)
         run: npx expo prebuild --platform android --clean
