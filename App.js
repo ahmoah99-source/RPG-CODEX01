@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Text, ActivityIndicator, Alert } from 'react-native';
 import { getTheme, themesMap, dicts } from './src/database/theme';
 import StandaloneCodexEngine from './src/database/dbEngine';
 
@@ -19,8 +19,8 @@ export default function App() {
     const [themeMode, setThemeMode] = useState('darkGlass');
     const [lang, setLang] = useState('ar');
     const [selectedHeroId, setSelectedHeroId] = useState(null);
+    const [showFabMenu, setShowFabMenu] = useState(false); // 🌟 حالة قائمة الزر العائم
 
-    // تهيئة المحرك بأمان داخل useEffect لمنع الانهيار وضمان العمل على الموبايل
     useEffect(() => {
         try {
             const engine = new StandaloneCodexEngine();
@@ -45,7 +45,6 @@ export default function App() {
     const currentTheme = getTheme(themeMode);
     const currentDict = dicts[lang] || dicts.ar;
 
-    // تحديد البطل النشط بأمان تام
     let activeHeroes = [];
     try {
         const rawHeroes = codexEngine.getData('heroes');
@@ -58,6 +57,28 @@ export default function App() {
 
     const activeHeroId = selectedHeroId || (activeHeroes.length > 0 ? activeHeroes[0].id : null);
     const heroData = activeHeroId ? codexEngine.getHeroData(activeHeroId) : null;
+
+    // دوال التحكم بالزر العائم (حذف، تعديل، إضافة)
+    const handleDeleteHero = () => {
+        if (!activeHeroId) {
+            Alert.alert("تنبيه", "لا توجد شخصية محددة للحذف!");
+            return;
+        }
+        Alert.alert("حذف الشخصية", "هل أنت متأكد من حذف هذا البطل نهائياً؟", [
+            { text: "إلغاء", style: "cancel" },
+            { 
+                text: "حذف", 
+                style: "destructive", 
+                onpress: () => {
+                    codexEngine.deleteHero(activeHeroId);
+                    setSelectedHeroId(null);
+                    setShowFabMenu(false);
+                    setCurrentView('heroes');
+                    Alert.alert("تم", "🗑️ تم حذف البطل بنجاح.");
+                }
+            }
+        ]);
+    };
 
     const renderActiveView = () => {
         switch (currentView) {
@@ -121,7 +142,7 @@ export default function App() {
             </View>
 
             {/* محتوى الشاشات */}
-            <ScrollView contentContainerStyle={styles.contentContainer}>
+            <ScrollView contentContainerStyle={styles.contentContainer} onScroll={() => setShowFabMenu(false)}>
                 {currentView === 'sidebar' ? (
                     <View style={styles.sidebarBox}>
                         {[
@@ -133,7 +154,7 @@ export default function App() {
                             <TouchableOpacity 
                                 key={link.id} 
                                 style={styles.sidebarLink}
-                                onPress={() => setCurrentView(link.id)}
+                                onPress={() => { setCurrentView(link.id); setShowFabMenu(false); }}
                             >
                                 <Text style={{ fontSize: 16 }}>{link.icon}</Text>
                                 <Text style={[styles.sidebarLinkText, { color: currentTheme.text }]}>{link.label}</Text>
@@ -145,13 +166,29 @@ export default function App() {
                 )}
             </ScrollView>
 
-            {/* الزرار العائم للاختصارات السريعة (يفتح شاشة إضافة بطل جديد) */}
-            <TouchableOpacity 
-                style={[styles.floatingBtn, { backgroundColor: currentTheme.accent }]}
-                onPress={() => setCurrentView('addHero')}
-            >
-                <Text style={{ fontSize: 22, color: '#fff' }}>➕</Text>
-            </TouchableOpacity>
+            {/* 🌟 الزرار العائم مع القائمة المنسدلة (إضافة، تعديل، حذف) */}
+            <View style={styles.fabContainer}>
+                {showFabMenu && (
+                    <View style={[styles.fabMenu, { backgroundColor: currentTheme.cardBg || '#1e1e2f', borderColor: currentTheme.accent }]}>
+                        <TouchableOpacity style={styles.fabMenuItem} onPress={() => { setCurrentView('addHero'); setShowFabMenu(false); }}>
+                            <Text style={styles.fabMenuText}>➕ إضافة بطل</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.fabMenuItem} onPress={() => { setCurrentView('editHero'); setShowFabMenu(false); }}>
+                            <Text style={styles.fabMenuText}>✏️ تعديل البطل</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.fabMenuItem} onPress={() => { handleDeleteHero(); }}>
+                            <Text style={[styles.fabMenuText, { color: '#ff4757' }]}>🗑️ حذف البطل</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+
+                <TouchableOpacity 
+                    style={[styles.floatingBtn, { backgroundColor: currentTheme.accent }]}
+                    onPress={() => setShowFabMenu(!showFabMenu)}
+                >
+                    <Text style={{ fontSize: 22, color: '#fff' }}>{showFabMenu ? '✕' : '⚔️'}</Text>
+                </TouchableOpacity>
+            </View>
 
             {/* البار السفلي الدائري */}
             <View style={[styles.bottomNav, { backgroundColor: currentTheme.navBg, borderColor: currentTheme.navBorder }]}>
@@ -165,7 +202,7 @@ export default function App() {
                         <TouchableOpacity 
                             key={tab.id}
                             style={[styles.tabItem, isActive && { backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 14 }]}
-                            onPress={() => setCurrentView(tab.id)}
+                            onPress={() => { setCurrentView(tab.id); setShowFabMenu(false); }}
                         >
                             <Text style={{ fontSize: 15 }}>{tab.icon}</Text>
                             <Text style={[styles.tabLabel, { color: isActive ? currentTheme.accent : currentTheme.text }]}>{tab.label}</Text>
@@ -192,5 +229,9 @@ const styles = StyleSheet.create({
     settingsBox: { gap: 10, paddingVertical: 10 },
     sectionTitle: { fontSize: 13, fontWeight: 'bold', marginBottom: 5 },
     themeCard: { padding: 12, borderRadius: 12, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    floatingBtn: { position: 'absolute', bottom: 75, right: 20, width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', zIndex: 60, elevation: 8 }
+    fabContainer: { position: 'absolute', bottom: 75, right: 20, zIndex: 60, alignItems: 'flex-end', gap: 8 },
+    fabMenu: { width: 140, borderRadius: 12, borderWidth: 1, padding: 6, gap: 4, elevation: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 5 },
+    fabMenuItem: { paddingVertical: 8, paddingHorizontal: 10, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.06)' },
+    fabMenuText: { fontSize: 10, fontWeight: 'bold', color: '#fff', textAlign: 'center' },
+    floatingBtn: { width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', elevation: 8 }
 });
